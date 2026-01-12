@@ -268,7 +268,7 @@ def findoutput(fn_bcpl):
 def endread():
     """Close the current input stream."""
     global cis
-    if cis != sysin and cis in _file_handles:
+    if cis != 1 and cis in _file_handles:  # Don't close stdin
         _file_handles[cis].close()
         del _file_handles[cis]
     cis = sysin
@@ -276,14 +276,14 @@ def endread():
 def endwrite():
     """Close the current output stream."""
     global cos
-    if cos != sysprint and cos in _file_handles:
+    if cos != 2 and cos in _file_handles:  # Don't close stdout
         _file_handles[cos].close()
         del _file_handles[cos]
     cos = sysprint
 
 def rdch():
     """Read a character from the current input stream."""
-    if cis == sysin:
+    if cis == 1:  # stdin
         # Read from stdin
         c = sys.stdin.buffer.read(1)
         if not c:
@@ -304,7 +304,7 @@ def wrch(c):
     if c == ASC_LF:
         newline()
     else:
-        if cos == sysprint:
+        if cos == 2:  # stdout
             sys.stdout.buffer.write(bytes([c]))
             sys.stdout.buffer.flush()
         elif cos in _file_handles:
@@ -312,7 +312,7 @@ def wrch(c):
 
 def newline():
     """Write a newline to the current output stream."""
-    if cos == sysprint:
+    if cos == 2:  # stdout
         sys.stdout.write("\n")
         sys.stdout.flush()
     elif cos in _file_handles:
