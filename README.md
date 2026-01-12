@@ -10,7 +10,7 @@ This repository contains BCPL INTCODE interpreter implementations in multiple la
 | Directory | Language | Description |
 |-----------|----------|-------------|
 | `bcpl-js-console` | JavaScript/Node.js | Fast, production-ready implementation |
-| `bcpl-python-console` | Python | Pure Python port (slower, but portable) |
+| `bcpl-python-console` | Python | Pure Python port - fully functional and portable |
 
 It is ported from https://sourceforge.net/projects/bcpl-c64/ <br>
 For a browser version look at https://github.com/dagfinndybvig/onlineBCPL <br>

@@ -1,6 +1,3 @@
-
-<h1>WORK IN PROGRESS</h1>
-
 # BCPL Python Console
 
 This is a pure Python port of the BCPL INTCODE interpreter (`icint.c`).
@@ -11,17 +8,18 @@ Ported from the Node.js version at [nodeBCPL](https://github.com/dagfinndybvig/n
 For the original JavaScript/Node.js version, see the `bcpl-js-console` directory.  
 More or less compatible with the classic book https://archive.org/details/richards1979bcpl/mode/2up
 
-## ⚠️ Performance Note
+## Performance Note
 
-**This pure Python implementation is significantly slower than the Node.js version.**
+This pure Python implementation works well for typical BCPL programs and compilation tasks.
+While CPython is adequate for most uses, you can optionally use PyPy for even better performance:
 
-The BCPL compiler (syni+trni+cgi) requires executing millions of INTCODE instructions.
-While CPython can execute the interpreter loop, it does so much more slowly than V8 (Node.js).
+```bash
+# Using CPython (standard Python)
+./compile.sh test.b
 
-**Recommendations for better performance:**
-- Use **PyPy** instead of CPython: `pypy3 icint.py ...` (typically 10-50x faster)
-- For production use, prefer the Node.js version in `bcpl-js-console`
-- Simple BCPL programs will still work, just with longer compilation times
+# Using PyPy for better performance (optional)
+PYTHON=pypy3 ./compile.sh test.b
+```
 
 ## Requirements
 
@@ -59,10 +57,16 @@ The compilation process generates the following intermediate and final files in 
 
 ### Automated Compilation and Execution
 
-Use the `compile.sh` script to compile and run a BCPL program:
+**On Linux/macOS**, use the `compile.sh` script:
 
 ```bash
 ./compile.sh test.b
+```
+
+**On Windows**, use the `compile.bat` script:
+
+```cmd
+compile.bat test.b
 ```
 
 ### Manual Steps
