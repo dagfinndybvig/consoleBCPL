@@ -95,7 +95,7 @@ Use the `compile.sh` script to compile and run a BCPL program:
 
 # BCPL Python Console
 
-This is a Python port of the BCPL INTCODE interpreter. It requires no compilation and works with any Python 3 installation.
+This is a Python port of the BCPL INTCODE interpreter. It is ready to go and works with any Python 3 installation.
 
 ## Usage
 
