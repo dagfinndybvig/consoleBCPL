@@ -15,7 +15,8 @@ This repository contains BCPL INTCODE interpreter implementations in multiple la
 
 It is ported from the C version at https://sourceforge.net/projects/bcpl-c64/ <br>
 For a browser version look at https://github.com/dagfinndybvig/onlineBCPL <br>
-More or less compatible with the classic book https://archive.org/details/richards1979bcpl/mode/2up
+More or less compatible with the classic book https://archive.org/details/richards1979bcpl/mode/2up<br><br>
+It is made in honour of Martin Richards, the creator of BCPL<br>
 
 ---
 
