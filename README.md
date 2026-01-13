@@ -110,7 +110,7 @@ For better performance, use PyPy instead of CPython. See `bcpl-python-console/RE
 
 # BCPL Rust Console
 
-This is a Rust port of the BCPL INTCODE interpreter, offering high performance and zero external dependencies.
+This is a Rust port of the BCPL INTCODE interpreter, offering high performance and zero external dependencies. Instructions included to build on your own system as it runs natively.
 
 ## Building
 
@@ -129,7 +129,7 @@ See `bcpl-rust-console/README.md` for detailed documentation.
 
 ---
 
-## Contributing
+# Contributing
 
 If you have cloned this repository to a peripheral computer and made additions, here's how to push them back to the central repository:
 
