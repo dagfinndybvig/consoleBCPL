@@ -11,6 +11,7 @@ This repository contains BCPL INTCODE interpreter implementations in multiple la
 |-----------|----------|-------------|
 | `bcpl-js-console` | JavaScript/Node.js | Fast, production-ready implementation |
 | `bcpl-python-console` | Python | Pure Python port - fully functional and portable |
+| `bcpl-rust-console` | Rust | High-performance implementation with zero dependencies |
 
 It is ported from https://sourceforge.net/projects/bcpl-c64/ <br>
 For a browser version look at https://github.com/dagfinndybvig/onlineBCPL <br>
@@ -169,3 +170,24 @@ git pull origin main
 ```
 
 This helps avoid merge conflicts and ensures your changes are based on the latest code.
+
+---
+
+# BCPL Rust Console
+
+This is a Rust port of the BCPL INTCODE interpreter, offering high performance and zero external dependencies.
+
+## Building
+
+```bash
+cd bcpl-rust-console
+cargo build --release
+```
+
+## Usage
+
+```bash
+./compile.sh test.b
+```
+
+See `bcpl-rust-console/README.md` for detailed documentation.

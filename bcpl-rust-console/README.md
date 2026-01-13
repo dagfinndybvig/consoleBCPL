@@ -1,14 +1,15 @@
 # BCPL INTCODE Interpreter - Rust Port
 
-This is a pure Rust port of the BCPL INTCODE interpreter, based on the Node.js and Python implementations.
+This is a pure Rust port of the BCPL INTCODE interpreter, based on the Node.js and Python implementations. It has been tested with all available BCPL sample programs and produces identical output to the other implementations.
 
 ## Features
 
 - Pure Rust implementation with zero dependencies
-- Full BCPL intcode instruction set support
+- Full BCPL INTCODE instruction set support
 - File I/O operations
 - String operations (packed/unpacked BCPL strings)
 - Assembler and interpreter in one binary
+- Tested with test.b, fact.b, queens.b, and cmpltest.b
 
 ## Building
 
