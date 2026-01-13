@@ -173,6 +173,21 @@ This helps avoid merge conflicts and ensures your changes are based on the lates
 
 ---
 
+# BCPL Python Console
+
+This is a Python port of the BCPL INTCODE interpreter. It requires no compilation and works with any Python 3 installation.
+
+## Usage
+
+```bash
+cd bcpl-python-console
+./compile.sh test.b
+```
+
+For better performance, use PyPy instead of CPython. See `bcpl-python-console/README.md` for details.
+
+---
+
 # BCPL Rust Console
 
 This is a Rust port of the BCPL INTCODE interpreter, offering high performance and zero external dependencies.
