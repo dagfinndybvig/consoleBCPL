@@ -3,9 +3,7 @@
 This is a pure Python port of the BCPL INTCODE interpreter (`icint.c`).
 It allows compiling and running BCPL programs in a Python environment.
 
-Ported from the Node.js version at [nodeBCPL](https://github.com/dagfinndybvig/nodeBCPL)
-
-For the original JavaScript/Node.js version, see the `bcpl-js-console` directory.  
+Ported from the Node.js version, see the `bcpl-js-console` directory.  
 More or less compatible with the classic book https://archive.org/details/richards1979bcpl/mode/2up
 
 ## Performance Note
