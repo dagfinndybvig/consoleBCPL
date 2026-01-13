@@ -90,6 +90,41 @@ Use the `compile.sh` script to compile and run a BCPL program:
 - `syni` and `trni` are concatenated to share the label namespace (or rather, to avoid clearing labels between passes, although they mostly use globals).
 - `trni` writes directly to a file named `OCODE` (ignoring standard output redirection for the code itself).
 
+
+# BCPL Python Console
+
+This is a Python port of the BCPL INTCODE interpreter. It requires no compilation and works with any Python 3 installation.
+
+## Usage
+
+```bash
+cd bcpl-python-console
+./compile.sh test.b
+```
+
+For better performance, use PyPy instead of CPython. See `bcpl-python-console/README.md` for details.
+
+---
+
+# BCPL Rust Console
+
+This is a Rust port of the BCPL INTCODE interpreter, offering high performance and zero external dependencies.
+
+## Building
+
+```bash
+cd bcpl-rust-console
+cargo build --release
+```
+
+## Usage
+
+```bash
+./compile.sh test.b
+```
+
+See `bcpl-rust-console/README.md` for detailed documentation.
+
 ## Contributing
 
 If you have cloned this repository to a peripheral computer and made additions, here's how to push them back to the central repository:
@@ -172,37 +207,3 @@ git pull origin main
 This helps avoid merge conflicts and ensures your changes are based on the latest code.
 
 ---
-
-# BCPL Python Console
-
-This is a Python port of the BCPL INTCODE interpreter. It requires no compilation and works with any Python 3 installation.
-
-## Usage
-
-```bash
-cd bcpl-python-console
-./compile.sh test.b
-```
-
-For better performance, use PyPy instead of CPython. See `bcpl-python-console/README.md` for details.
-
----
-
-# BCPL Rust Console
-
-This is a Rust port of the BCPL INTCODE interpreter, offering high performance and zero external dependencies.
-
-## Building
-
-```bash
-cd bcpl-rust-console
-cargo build --release
-```
-
-## Usage
-
-```bash
-./compile.sh test.b
-```
-
-See `bcpl-rust-console/README.md` for detailed documentation.
