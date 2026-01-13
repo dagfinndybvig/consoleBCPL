@@ -90,6 +90,7 @@ Use the `compile.sh` script to compile and run a BCPL program:
 - `syni` and `trni` are concatenated to share the label namespace (or rather, to avoid clearing labels between passes, although they mostly use globals).
 - `trni` writes directly to a file named `OCODE` (ignoring standard output redirection for the code itself).
 
+---
 
 # BCPL Python Console
 
@@ -124,6 +125,8 @@ cargo build --release
 ```
 
 See `bcpl-rust-console/README.md` for detailed documentation.
+
+---
 
 ## Contributing
 
