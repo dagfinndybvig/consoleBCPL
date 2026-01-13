@@ -9,7 +9,7 @@ This repository contains BCPL INTCODE interpreter implementations in multiple la
 
 | Directory | Language | Description |
 |-----------|----------|-------------|
-| `bcpl-js-console` | JavaScript/Node.js | Fast, production-ready implementation |
+| `bcpl-js-console` | JavaScript/Node.js | A handy go-to if you have Node.js on your system |
 | `bcpl-python-console` | Python | Pure Python port - fully functional and portable |
 | `bcpl-rust-console` | Rust | High-performance implementation with zero dependencies |
 
