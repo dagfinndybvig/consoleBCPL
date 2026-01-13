@@ -13,7 +13,7 @@ This repository contains BCPL INTCODE interpreter implementations in multiple la
 | `bcpl-python-console` | Python | Pure Python port - fully functional and portable |
 | `bcpl-rust-console` | Rust | High-performance implementation with zero dependencies |
 
-It is ported from the C version at https://sourceforge.net/projects/bcpl-c64/ <br>
+Ported from the C version at https://sourceforge.net/projects/bcpl-c64/ <br>
 For a browser version look at https://github.com/dagfinndybvig/onlineBCPL <br>
 More or less compatible with the classic book https://archive.org/details/richards1979bcpl/mode/2up<br><br>
 This project was made with extensive use of Github Copilot coding agent. As well as contributing towards the preservation of BCPL, it demonstrates that coding agents can do far more than frontend and boilerplate. In fact, this is en effect low-level programming, dealing wiht virtual machines. Models used: Gemini 3 Pro, Claude Sonnet 4.5 and Claude Opus 4.5.<br><br>
