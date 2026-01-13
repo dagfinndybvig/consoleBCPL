@@ -11,6 +11,29 @@ This is a pure Rust port of the BCPL INTCODE interpreter, based on the Node.js a
 - Assembler and interpreter in one binary
 - Tested with test.b, fact.b, queens.b, and cmpltest.b
 
+## Prerequisites
+
+You need Rust installed on your system. If you don't have it, install it using rustup:
+
+```bash
+# On Linux/macOS:
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# On Windows:
+# Download and run rustup-init.exe from https://rustup.rs
+```
+
+After installation, restart your terminal or run:
+```bash
+source $HOME/.cargo/env
+```
+
+Verify the installation:
+```bash
+rustc --version
+cargo --version
+```
+
 ## Building
 
 Build in release mode for best performance:
