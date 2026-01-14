@@ -1,0 +1,1 @@
+This folder is intended to hold example files for the repository.
