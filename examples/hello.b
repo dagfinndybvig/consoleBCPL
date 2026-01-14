@@ -1,1 +1,3 @@
-GET "Hello, World!"  // BCPL code to print a greeting message
+GET "LIBHDR"
+
+LET START() BE WRITES("Hello world*N")
