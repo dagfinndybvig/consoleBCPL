@@ -1,4 +1,8 @@
----- From the C version that is now ported to Node.js ----
+----- From the C version that is now ported to Node.js ----
+
+Console usage (Node.js):
+	./compile.sh test.b
+	./compile.sh test.b -iINPUT -oOUTPUT
 
 Here you will find a small INTCODE interpreter written in C. The code not only compiles using CC65 (C64),
 but also with GCC, Laser C (ATARI ST), Megamax C (ATARI ST), Pure C (ATARI ST) and Sozobon C (Atari ST).

@@ -14,9 +14,11 @@ While CPython is adequate for most uses, you can optionally use PyPy for even be
 ```bash
 # Using CPython (standard Python)
 ./compile.sh test.b
+./compile.sh test.b -iINPUT -oOUTPUT
 
 # Using PyPy for better performance (optional)
 PYTHON=pypy3 ./compile.sh test.b
+PYTHON=pypy3 ./compile.sh test.b -iINPUT -oOUTPUT
 ```
 
 ## Requirements
@@ -59,12 +61,14 @@ The compilation process generates the following intermediate and final files in 
 
 ```bash
 ./compile.sh test.b
+./compile.sh test.b -iINPUT -oOUTPUT
 ```
 
 **On Windows**, use the `compile.bat` script:
 
 ```cmd
 compile.bat test.b
+compile.bat test.b -iINPUT -oOUTPUT
 ```
 
 ### Manual Steps
@@ -84,13 +88,14 @@ compile.bat test.b
 
 3. **Compile OCODE to INTCODE:**
    ```bash
-   python3 icint.py cgi -iOCODE > INTCODE
+   python3 icint.py cgi -iOCODE
    ```
    This produces an `INTCODE` file.
 
 4. **Run INTCODE:**
    ```bash
    python3 icint.py INTCODE
+   python3 icint.py INTCODE -iINPUT -oOUTPUT
    ```
 
 ## Implementation Details

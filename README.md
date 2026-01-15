@@ -58,6 +58,7 @@ Use the `compile.sh` script to compile and run a BCPL program:
 
 ```bash
 ./compile.sh test.b
+./compile.sh test.b -iINPUT -oOUTPUT
 ```
 
 ### Manual Steps
@@ -103,6 +104,7 @@ This is a Python port of the BCPL INTCODE interpreter. It is ready to go and wor
 ```bash
 cd bcpl-python-console
 ./compile.sh test.b
+./compile.sh test.b -iINPUT -oOUTPUT
 ```
 
 For better performance, use PyPy instead of CPython. See `bcpl-python-console/README.md` for details.
@@ -124,6 +126,7 @@ cargo build --release
 
 ```bash
 ./compile.sh test.b
+./compile.sh test.b -iINPUT -oOUTPUT
 ```
 
 See `bcpl-rust-console/README.md` for detailed documentation.

@@ -64,6 +64,7 @@ Use the `compile.sh` script to compile and run BCPL source files:
 
 ```bash
 ./compile.sh test.b
+./compile.sh test.b -iINPUT -oOUTPUT
 ```
 
 This will:
