@@ -35,4 +35,4 @@ $PYTHON icint.py cgi -iOCODE
 
 # Run INTCODE
 echo "Running INTCODE..."
-$PYTHON icint.py INTCODE
+$PYTHON icint.py INTCODE $2 $3

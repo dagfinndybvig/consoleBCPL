@@ -676,14 +676,7 @@ def interpret():
         if w & _FP_BIT:
             d = _s16(d + sp)
         if w & _FI_BIT:
-            if d >= 19900 or d < 0:
-                import sys
-                print(f"DEBUG PY: d={d} sp={sp} pc={pc} w={w:#06x} - would crash!", file=sys.stderr)
             d = _m[d]
-        
-        if pc >= 635 and pc <= 645 and sp == 15715:
-            import sys
-            print(f"TRACE PY: pc={pc} a={a} b={b} sp={sp} w={w:#06x} d={d} m[15717]={_m[15717]}", file=sys.stderr)
         
         fn = w & 7  # F7_X = 7
         
@@ -691,9 +684,6 @@ def interpret():
             b = a
             a = d
         elif fn == 1:  # S - Store
-            if d == 167 and pc < 700:
-                import sys
-                print(f"DEBUG PY STORE167: m[167] <- {a} at pc={pc} sp={sp} a={a} b={b}", file=sys.stderr)
             _m[d] = a
         elif fn == 2:  # A - Add
             a = _s16(a + d)
@@ -741,9 +731,6 @@ def interpret():
                     pc = _m[v_ptr + 1]
                 elif a == 40:  # K40_APTOVEC
                     b = d + _m[v_ptr + 1] + 1
-                    if b >= 15710 and b <= 15725:
-                        import sys
-                        print(f"DEBUG PY APTOVEC1571x: b={b} storing sp={sp} pc={pc} d={d} m[v_ptr+1]={_m[v_ptr + 1]}", file=sys.stderr)
                     _m[b] = sp
                     _m[b + 1] = pc
                     _m[b + 2] = d
