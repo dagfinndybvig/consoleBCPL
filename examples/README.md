@@ -38,7 +38,7 @@ The program output will be written to `examples/output.txt`.
 
 ### Expected output (coins2.b)
 
-After compiling and running `coins2.b`, the output should look like this:
+After compiling and running `coins2.b`, the output should look something like this:
 
 COINS PROBLEM
 SUM =   0  NUMBER OF WAYS =      1
