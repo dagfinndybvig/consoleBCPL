@@ -1,11 +1,10 @@
 # Something to try
 
 If you have built the Rust version for your system you can follow the first example. Or follow the JS version below, it is essentially the same.
-Or Python for that matter. You must just run the compile script from the relevant directory.
 
-The manner is slightly Linux-style, but Windows should be much the same. Look at compile.bat in the Python directory.
+I also add a version specifically for Windows/Python since that seems a prevalent combination.
 
-Or look at the manual steps in the top-level README.md.
+For all platforms: Look at the manual steps in the top-level README.md to learn more.
 
 Notice the file handling: Options -i -o in addition to normal piping.
 
@@ -82,7 +81,7 @@ compile.bat ..\examples\coins2.b -o..\examples\output.txt > error.txt
 
 Check `error.txt` for compiler output and `examples\output.txt` for the program output.
 
-## Coins problem background
+# Coins problem background
 
 The **coins** example is the classic *coin change counting* problem: given a set of denominations, it counts how many distinct ways there are to make a target sum where order does **not** matter. 
 This is a standard combinatorics/dynamic‑programming benchmark that’s small, deterministic, and easy to verify, so it makes a good sanity test for the compiler, runtime, and I/O pipeline.
