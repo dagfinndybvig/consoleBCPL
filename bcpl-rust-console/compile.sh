@@ -29,4 +29,5 @@ echo "Compiling OCODE to INTCODE..."
 
 # Run INTCODE
 echo "Running INTCODE..."
-./target/release/icint INTCODE
+./target/release/icint INTCODE $2
+
