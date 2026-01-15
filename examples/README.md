@@ -3,7 +3,7 @@
 If you have built the Rust version for your system you can follow the first example. Or follow the JS version below, it is essentially the same.
 Or Python for that matter. You must just run the compile script from the relevant directory.
 
-The is Linux-style, but Windows should be much the same. Look at compile.bat in the various interpreter directories.
+Below is Linux-style, but Windows should be much the same. Look at compile.bat in the various interpreter directories.
 
 Notice the file handling! Options -i -o in addition to normal piping.
 
@@ -17,6 +17,8 @@ The `transform.b` program converts text to uppercase and rewrites brace syntax:
 - `}` becomes `$)`
 
 This is useful for converting newer BCPL examples that use braces into the classic `$(` / `$)` block syntax.
+
+NOTE: Some new features does not work in the old BCPL. For instance, I have commented out SECTION headings.
 
 ### Workflow (from the Rust console)
 
