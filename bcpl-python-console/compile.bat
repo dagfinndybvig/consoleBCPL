@@ -36,4 +36,4 @@ if errorlevel 1 exit /b 1
 
 REM Run INTCODE
 echo Running INTCODE...
-%PYTHON% icint.py INTCODE
+%PYTHON% icint.py INTCODE %2 %3
