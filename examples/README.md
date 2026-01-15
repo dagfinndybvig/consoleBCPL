@@ -49,7 +49,7 @@ SUM =  21  NUMBER OF WAYS =     44
 SUM = 100  NUMBER OF WAYS =   4563
 SUM = 200  NUMBER OF WAYS =   8146
 
-### Workflow (from the JS console)
+### Workflow (from the JS console - Python accordingly)
 
 The same steps work from `bcpl-js-console`. Use the Node-based interpreter there:
 
