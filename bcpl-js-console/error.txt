@@ -1,0 +1,19 @@
+Compiling ../examples/coins2.b to OCODE...
+
+BCPL 1
+
+TREE SIZE 946
+
+PHASE 1 COMPLETE
+Compiling OCODE to INTCODE...
+
+PROGRAM LENGTH = 161
+Running INTCODE...
+COINS PROBLEM
+SUM =   0  NUMBER OF WAYS =      1
+SUM =   1  NUMBER OF WAYS =      1
+SUM =   2  NUMBER OF WAYS =      2
+SUM =   5  NUMBER OF WAYS =      4
+SUM =  21  NUMBER OF WAYS =     44
+SUM = 100  NUMBER OF WAYS =   4563
+SUM = 200  NUMBER OF WAYS =   8146
