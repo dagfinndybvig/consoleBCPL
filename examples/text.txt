@@ -5,6 +5,6 @@ and brace conversion
 Test:
 
 {
-
+    this should be upper case in the output
 }
 
