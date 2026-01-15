@@ -109,6 +109,8 @@ cd bcpl-python-console
 
 For better performance, use PyPy instead of CPython. See `bcpl-python-console/README.md` for details.
 
+FOR A SPECIFIC COMPILE.BAT FOR PYTHON/WINDOWS ALSO SEE THE PYTHON DIRECTORY
+
 ---
 
 # BCPL Rust Console
