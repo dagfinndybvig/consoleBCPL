@@ -51,7 +51,7 @@ SUM =  21  NUMBER OF WAYS =     44
 SUM = 100  NUMBER OF WAYS =   4563
 SUM = 200  NUMBER OF WAYS =   8146
 
-### Workflow (from the JS console - Python accordingly)
+### Workflow (from the JS console)
 
 The same steps work from `bcpl-js-console`. Use the Node-based interpreter there:
 
@@ -67,7 +67,20 @@ Then compile and run the transformed program:
 
 The program output will be written to `examples/output.txt`.
 
-// ...existing code...
+### Windows (Python console with compile.bat)
+
+From `bcpl-python-console` on Windows, use `compile.bat` instead of `compile.sh`.
+It accepts the same arguments as the Linux/macOS script.
+
+Transform `coins.b` into `coins2.b` (old-style syntax):
+
+compile.bat ..\examples\transform.b -i..\examples\coins.b -o..\examples\coins2.b > error.txt
+
+Then compile and run the transformed program:
+
+compile.bat ..\examples\coins2.b -o..\examples\output.txt > error.txt
+
+Check `error.txt` for compiler output and `examples\output.txt` for the program output.
 
 ## Coins problem background
 
