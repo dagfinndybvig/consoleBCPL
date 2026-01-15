@@ -64,3 +64,10 @@ Then compile and run the transformed program:
 ./compile.sh ../examples/coins2.b -o../examples/output.txt > error.txt
 
 The program output will be written to `examples/output.txt`.
+
+// ...existing code...
+
+## Coins problem background
+
+The **coins** example is the classic *coin change counting* problem: given a set of denominations, it counts how many distinct ways there are to make a target sum where order does **not** matter. 
+This is a standard combinatorics/dynamic‑programming benchmark that’s small, deterministic, and easy to verify, so it makes a good sanity test for the compiler, runtime, and I/O pipeline.
