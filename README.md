@@ -18,7 +18,7 @@ This repository contains BCPL INTCODE interpreter implementations in multiple la
 Ported from the C version at https://sourceforge.net/projects/bcpl-c64/ <br>
 For a browser version look at https://github.com/dagfinndybvig/onlineBCPL <br>
 More or less compatible with the classic book https://archive.org/details/richards1979bcpl/mode/2up<br><br>
-The conversions were effected with extensive use of Github Copilot coding agent. As well as contributing towards the preservation of BCPL, it demonstrates that coding agents can do far more than frontend and boilerplate. In fact, this is en effect low-level programming, involving virtual machines.
+The conversions were effected with extensive use of Github Copilot coding agent. As well as contributing towards the preservation of BCPL, it demonstrates that coding agents can do far more than frontend and boilerplate. In fact, this is in effect low-level programming, involving virtual machines.
 
 Models used: Gemini 3 Pro, Claude Sonnet 4.5, Claude Opus 4.5 and more. The use of coding agents removes the last excuse not to preserve great software!<br><br>
 This project is made in honour of Martin Richards, the creator of BCPL.<br>
