@@ -1,4 +1,14 @@
+Compiling ../examples/transform.b to OCODE...
 
-HELLO RUST
-Claude Opus 4.5 came through!
+BCPL 1
+
+TREE SIZE 755
+
+PHASE 1 COMPLETE
+Compiling OCODE to INTCODE...
+
+PROGRAM LENGTH = 30
+Running INTCODE...
+
+FROM LOWER CASE TO UPPER CASE
 

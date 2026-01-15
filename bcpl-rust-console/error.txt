@@ -1,0 +1,11 @@
+Compiling ../examples/output.txt to OCODE...
+
+BCPL 1
+
+TREE SIZE 946
+
+PHASE 1 COMPLETE
+Compiling OCODE to INTCODE...
+
+PROGRAM LENGTH = 161
+Running INTCODE...
