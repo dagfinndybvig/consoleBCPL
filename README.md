@@ -3,6 +3,8 @@
 
 # BCPL Interpreters
 
+The language that inspired C, powered the first MUD and helped make the Amiga operating system!
+
 This repository contains BCPL INTCODE interpreter implementations in multiple languages.
 
 ## Available Implementations
