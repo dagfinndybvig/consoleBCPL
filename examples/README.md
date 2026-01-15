@@ -3,9 +3,11 @@
 If you have built the Rust version for your system you can follow the first example. Or follow the JS version below, it is essentially the same.
 Or Python for that matter. You must just run the compile script from the relevant directory.
 
-The manner is slightly Linux-style, but Windows should be much the same. Look at compile.bat in the various interpreter directories.
+The manner is slightly Linux-style, but Windows should be much the same. Look at compile.bat in the Python directory.
 
-Notice the file handling! Options -i -o in addition to normal piping.
+Or look at the manual steps in the top-level README.md.
+
+Notice the file handling: Options -i -o in addition to normal piping.
 
 If no options or redirecting I/O will be console.
 
