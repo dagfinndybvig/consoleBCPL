@@ -4,7 +4,7 @@ If you have built the Rust version for your system you can follow the first exam
 
 I also add a version specifically for Windows/Python since that seems a prevalent combination.
 
-For all platforms: Look at the manual steps in the top-level README.md to learn more.
+For all platforms: Look at the manual steps in the top-level README.md to learn more. Everything is basically the same independently of implementation, it is just a question of executing from the the right directory, and choosing the right compilation script if you are not doing it manually. 
 
 Notice the file handling: Options -i -o in addition to normal piping.
 
