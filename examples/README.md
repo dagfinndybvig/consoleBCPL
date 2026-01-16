@@ -37,19 +37,6 @@ You can then compile and run the transformed program:
 
 The program output will be written to `examples/output.txt`.
 
-### Expected output (coins2.b)
-
-After compiling and running `coins2.b`, the output should look something like this:
-
-COINS PROBLEM
-SUM =   0  NUMBER OF WAYS =      1
-SUM =   1  NUMBER OF WAYS =      1
-SUM =   2  NUMBER OF WAYS =      2
-SUM =   5  NUMBER OF WAYS =      4
-SUM =  21  NUMBER OF WAYS =     44
-SUM = 100  NUMBER OF WAYS =   4563
-SUM = 200  NUMBER OF WAYS =   8146
-
 ### Workflow (from the JS console)
 
 The same steps work from `bcpl-js-console`. Use the Node-based interpreter there:
@@ -85,3 +72,22 @@ Check `error.txt` for compiler output and `examples\output.txt` for the program 
 
 The **coins** example is the classic *coin change counting* problem: given a set of denominations, it counts how many distinct ways there are to make a target sum where order does **not** matter. 
 This is a standard combinatorics/dynamic‑programming benchmark that’s small, deterministic, and easy to verify, so it makes a good sanity test for the compiler, runtime, and I/O pipeline.
+
+### Expected output (coins2.b)
+
+After compiling and running `coins2.b`, the output should look something like this:
+
+COINS PROBLEM
+SUM =   0  NUMBER OF WAYS =      1
+
+SUM =   1  NUMBER OF WAYS =      1
+
+SUM =   2  NUMBER OF WAYS =      2
+
+SUM =   5  NUMBER OF WAYS =      4
+
+SUM =  21  NUMBER OF WAYS =     44
+
+SUM = 100  NUMBER OF WAYS =   4563
+
+SUM = 200  NUMBER OF WAYS =   8146
