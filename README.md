@@ -5,7 +5,7 @@
 
 The language that inspired C, powered the first MUD and helped make the Amiga operating system!
 
-BCPL pioneered the idea of compiling to bytecode and then interpreting it on a virtual machine, like Java today. The intention was very much creating a cross-platform apporach to computing.
+BCPL pioneered the idea of compiling to bytecode and then interpreting it on a virtual machine, like Java today. The intention was very much creating a cross-platform approach to computing.
 
 This repository contains BCPL INTCODE interpreter implementations in multiple languages. On that we can run an INTCODE version of the compiler which has already been provided to us. Thus we can bootstrap the whole system on a minimal basis. All we need to do is to reimplement the INTCODE interpreter, which now can be pretty much done by a coding agent. Accordingly the whole system should in principle be able to spread and multiply with very little human intervention.
 
