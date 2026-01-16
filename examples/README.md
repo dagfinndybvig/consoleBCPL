@@ -51,7 +51,8 @@ Then compile and run the transformed program:
 
 ./compile.sh ../examples/coins2.b -o../examples/output.txt > error.txt
 
-The program output will be written to `examples/output.txt`.
+The program output will be written to `examples/output.txt`. 
+Of course you can run the command without options and redirections, and then the output will just appear in the console.
 
 ### Windows (Python console with compile.bat)
 
@@ -79,15 +80,9 @@ After compiling and running `coins2.b`, the output should look something like th
 
 COINS PROBLEM
 SUM =   0  NUMBER OF WAYS =      1
-
 SUM =   1  NUMBER OF WAYS =      1
-
 SUM =   2  NUMBER OF WAYS =      2
-
 SUM =   5  NUMBER OF WAYS =      4
-
 SUM =  21  NUMBER OF WAYS =     44
-
 SUM = 100  NUMBER OF WAYS =   4563
-
 SUM = 200  NUMBER OF WAYS =   8146
