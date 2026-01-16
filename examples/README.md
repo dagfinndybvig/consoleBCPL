@@ -1,8 +1,8 @@
 # Something to try
 
-In the following I execute from the JS directory, but it does not matter much which version you are using.
+In the following I execute from the JS directory, but it does not matter much which version you are using. The Rust version needs to be built first though. The other two should be good to go. 
 
-However, I also added a compile script specifically for Windows/Python since that seems a prevalent combination.
+Also the sh-scripts are for Unix-style systems, so I added a compile.bat script specifically for Windows/Python since that seems a prevalent combination.
 
 For all platforms: Look at the manual steps in the top-level README.md to learn more. Everything is basically the same independently of implementation, it is just a question of executing from the the right directory, and choosing the right compilation script if you are not doing it manually. 
 
@@ -35,7 +35,8 @@ Then compile and run the transformed program:
 
 ./compile.sh ../examples/coins2.b -o../examples/output.txt > error.txt
 
-The program output will be written to `examples/output.txt`. 
+The program output will be written to `examples/output.txt`.
+
 Of course you can run the command without options and redirections, then the output will just appear in the console.
 
 ### Windows (Python console with compile.bat)
