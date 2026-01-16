@@ -1,8 +1,8 @@
 # Something to try
 
-If you have built the Rust version for your system you can follow the first example. Or follow the JS version below, it is essentially the same.
+In the following I execute from the JS directory, but it does not matter much which version you are using.
 
-I also add a version specifically for Windows/Python since that seems a prevalent combination.
+However, I also added a compile script specifically for Windows/Python since that seems a prevalent combination.
 
 For all platforms: Look at the manual steps in the top-level README.md to learn more. Everything is basically the same independently of implementation, it is just a question of executing from the the right directory, and choosing the right compilation script if you are not doing it manually. 
 
@@ -21,25 +21,9 @@ This is useful for converting newer BCPL examples that use braces into the class
 
 NOTE: Some new features does not work in the old BCPL. For instance, I have commented out SECTION headings.
 
-### Workflow (from the Rust console)
-
-Run the transformer using the Rust INTCODE interpreter in `bcpl-rust-console`:
-
-./compile.sh ../examples/transform.b -i../examples/coins.b -o../examples/coins2.b > error.txt
-
-- Input: `examples/coins.b` (new-style syntax)
-- Output: `examples/coins2.b` (old-style syntax)
-- Logs: `bcpl-rust-console/error.txt`
-
-You can then compile and run the transformed program:
-
-./compile.sh ../examples/coins2.b -o../examples/output.txt > error.txt
-
-The program output will be written to `examples/output.txt`.
-
 ### Workflow (from the JS console)
 
-The same steps work from `bcpl-js-console`. Use the Node-based interpreter there:
+Navigate to the `bcpl-js-console`. Use the Node-based interpreter from there:
 
 ./compile.sh ../examples/transform.b -i../examples/coins.b -o../examples/coins2.b > error.txt
 
