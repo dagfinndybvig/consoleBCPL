@@ -21,7 +21,7 @@ if not exist "%1" (
 )
 
 REM Concatenate syni and trni
-copy /y syni+trni synitrni >nul
+copy /y /b syni+trni synitrni >nul
 
 REM Compile BCPL to OCODE
 echo Compiling %1 to OCODE...
