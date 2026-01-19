@@ -20,9 +20,8 @@ if not exist "%1" (
     exit /b 1
 )
 
-REM Concatenate syni and trni (stripping first 3 lines from trni)
-copy /y syni synitrni >nul
-more +3 trni >> synitrni
+REM Concatenate syni and trni
+copy /y syni+trni synitrni >nul
 
 REM Compile BCPL to OCODE
 echo Compiling %1 to OCODE...

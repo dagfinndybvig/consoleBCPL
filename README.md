@@ -70,10 +70,9 @@ Use the `compile.sh` script to compile and run a BCPL program:
 ### Manual Steps
 
 1. **Prepare the compiler:**
-   Concatenate `syni` and `trni` (removing the `Z` from `trni`) to create `synitrni`.
+   Concatenate `syni` and `trni` to create `synitrni`.
    ```bash
-   cat syni > synitrni
-   tail -n +4 trni >> synitrni
+   cat syni trni > synitrni
    ```
 
 2. **Compile BCPL to OCODE:**

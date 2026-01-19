@@ -15,9 +15,8 @@ if [ ! -f "$1" ]; then
 	exit 1
 fi
 
-# Concatenate syni and trni (stripping Z from trni)
-cat syni > synitrni
-tail -n +4 trni >> synitrni
+# Concatenate syni and trni
+cat syni trni > synitrni
 
 # Compile BCPL to OCODE
 echo "Compiling $1 to OCODE..."
