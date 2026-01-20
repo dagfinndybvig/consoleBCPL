@@ -73,6 +73,35 @@ This will:
 3. Compile OCODE to INTCODE
 4. Run the INTCODE
 
+## Windows (GNU) build and usage
+
+You can cross-compile the Windows binary from Linux using the GNU target. Install the toolchain and target:
+
+```bash
+sudo apt update
+sudo apt install -y mingw-w64
+rustup target add x86_64-pc-windows-gnu
+```
+
+Build the Windows binary:
+
+```bash
+cargo build --release --target x86_64-pc-windows-gnu
+```
+
+The Windows executable will be created at:
+
+```
+target/x86_64-pc-windows-gnu/release/icint.exe
+```
+
+On Windows, you can use the `compile.bat` script (analogous to `compile.sh`) to compile and run BCPL programs:
+
+```bat
+compile.bat test.b
+compile.bat test.b -iINPUT -oOUTPUT
+```
+
 ## Example Programs
 
 - `test.b` - Simple "Hello World" program
