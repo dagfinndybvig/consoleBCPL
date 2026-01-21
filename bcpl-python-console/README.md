@@ -23,7 +23,7 @@ PYTHON=pypy3 ./compile.sh test.b -iINPUT -oOUTPUT
 
 ## Requirements
 
-- Python 3.6 or later (PyPy 3.6+ recommended for better performance)
+- Recommend Python 3.6 or later (PyPy 3.6+ recommended for better performance)
 - No external dependencies (pure Python implementation)
 
 ## Files
