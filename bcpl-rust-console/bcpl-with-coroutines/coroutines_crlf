@@ -1,0 +1,75 @@
+STATIC $(
+  Currco=0;
+  Colist=0
+$)
+
+LET Abort(N) = STOP(N)
+
+LET Initco() BE
+$( IF Currco=0 THEN
+   $( LET C = GETVEC(6)
+      IF C=0 DO Abort(200)
+      C!0 := LEVEL()
+      C!1 := 0
+      C!2 := Colist
+      C!3 := 0
+      C!4 := 0
+      C!5 := C
+      Colist := C
+      Currco := C
+   $)
+$)
+
+LET Changeco(A, Cptr) = CHANGECO(A, Cptr, @Currco)
+
+LET Createco(F, Size) = VALOF
+$( LET C = GETVEC(Size + 6)
+   IF C=0 RESULTIS 0
+
+   C!0 := C              // resumption point (stack pointer)
+   C!1 := Currco         // parent link
+   C!2 := Colist         // coroutine list link
+   C!3 := F              // main procedure
+   C!4 := Size           // stack size
+   C!5 := C              // coroutine pointer
+
+   Colist := C
+
+   Changeco(0, C)
+   C := F(Cowait(C)) REPEAT
+$)
+
+LET Deleteco(Cptr) = VALOF
+$( LET A = @Colist
+   UNTIL !A=0
+   | !A=Cptr DO A := !A+2
+
+   IF !A=0 RESULTIS FALSE
+   UNLESS Cptr!1=0 DO Abort(112)
+
+   !A := Cptr!2
+   FREEVEC(Cptr)
+   RESULTIS TRUE
+$)
+
+LET Callco(Cptr, A) = VALOF
+$( UNLESS Cptr!1=0 DO Abort(110)
+   Cptr!1 := Currco
+   RESULTIS Changeco(A, Cptr)
+$)
+
+LET Cowait(A) = VALOF
+$( LET Parent = Currco!1
+   Currco!1 := 0
+   IF Parent=0 DO Abort(111)
+   RESULTIS Changeco(A, Parent)
+$)
+
+LET Resumeco(Cptr, A) = VALOF
+$( LET Parent = Currco!1
+   Currco!1 := 0
+   IF Cptr=Currco RESULTIS A
+   UNLESS Cptr!1=0 DO Abort(111)
+   Cptr!1 := Parent
+   RESULTIS Changeco(A, Cptr)
+$)

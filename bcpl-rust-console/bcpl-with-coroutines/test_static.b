@@ -1,0 +1,10 @@
+GET "LIBHDR"
+
+GLOBAL $(
+$)
+
+STATIC $(
+  X=0
+$)
+
+LET START() BE WRITES("OK*N")
