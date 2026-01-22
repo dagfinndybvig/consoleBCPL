@@ -57,6 +57,7 @@ If the return value check fails, the test prints "RETURN MISMATCH" before stoppi
 
 ## Additional stabilization tests
 - [bcpl-with-coroutines/test_coroutines_resume.b](bcpl-with-coroutines/test_coroutines_resume.b): validates the `RESUMECO(CURRCO, A)` self-resume return path.
+- [bcpl-with-coroutines/test_coroutines_resume_cross.b](bcpl-with-coroutines/test_coroutines_resume_cross.b): exercises cross-coroutine `RESUMECO` with a separate callee (currently unstable; may hang).
 - [bcpl-with-coroutines/test_coroutines_delete.b](bcpl-with-coroutines/test_coroutines_delete.b): validates `DELETECO` only when parentless.
 
 ### Debug logging

@@ -1,11 +1,15 @@
-Compiling test_coroutines_delete.b to OCODE...
+Compiling test_coroutines_resume_cross.b to OCODE...
 
 BCPL 1
+APTOVEC: sp=10188 d_addr=10214 argc=5500 b_addr=15715 pc=720
 
-TREE SIZE 1797
+TREE SIZE 1876
 
 PHASE 1 COMPLETE
 Compiling OCODE to INTCODE...
 
-PROGRAM LENGTH = 500
+PROGRAM LENGTH = 543
 Running INTCODE...
+CHANGECO enter: arg=10 currco_addr=500 currco=1553 -> cptr=9886 sp=995 pc=711
+CHANGECO cptr fields: sp=9894 pc=492 parent=1553 next=14893 f=818 size=5000 self=9886
+CHANGECO exit: currco_addr=500 currco=9886 sp=9894 pc=492

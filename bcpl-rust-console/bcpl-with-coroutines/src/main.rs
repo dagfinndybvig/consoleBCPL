@@ -729,6 +729,9 @@ impl BcplState {
         let mut b: i16 = 0;
 
         loop {
+            if pc as usize >= self.m.len() {
+                self.halt("BAD PC", pc as i16);
+            }
             let w: u16 = self.m[pc as usize] as u16;
             pc = pc.wrapping_add(1);
 
@@ -754,7 +757,11 @@ impl BcplState {
                     a = d as i16;
                 }
                 1 => { // F1_S
-                    self.m[d as usize] = a;
+                    let d_idx = d as usize;
+                    if d_idx >= self.m.len() {
+                        self.halt("BAD STORE", d as i16);
+                    }
+                    self.m[d_idx] = a;
                 }
                 2 => { // F2_A
                     a = a.wrapping_add(d as i16);
@@ -903,15 +910,25 @@ impl BcplState {
                             _ => self.halt("UNKNOWN CALL", a),
                         }
                     } else {
-                        self.m[d_addr as usize] = sp as i16;
-                        self.m[d_addr as usize + 1] = pc as i16;
+                        let d_idx = d_addr as usize;
+                        if d_idx + 1 >= self.m.len() {
+                            self.halt("BAD FRAME", d_addr as i16);
+                        }
+                        self.m[d_idx] = sp as i16;
+                        self.m[d_idx + 1] = pc as i16;
                         sp = d_addr;
                         pc = a as u16;
                     }
                 }
                 7 => { // F7_X
                     match d {
-                        1 => a = self.m[a as u16 as usize],
+                        1 => {
+                            let a_idx = a as u16 as usize;
+                            if a_idx >= self.m.len() {
+                                self.halt("BAD LOAD", a);
+                            }
+                            a = self.m[a_idx];
+                        }
                         2 => a = -a,
                         3 => a = !a,
                         4 => {
