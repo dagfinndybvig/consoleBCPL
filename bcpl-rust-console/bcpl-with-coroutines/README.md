@@ -85,3 +85,11 @@ Set `BCPL_CO_DEBUG=1` to emit coroutine state traces from the interpreter to std
 3. Add a minimal coroutine test that yields exactly once, then exits cleanly.
 4. Add debug prints in the interpreter to log `sp`, `pc`, and `CURRCO` around `CHANGECO`.
 5. Confirm `CURRCO` and `COLIST` are in `GLOBAL` and that all procedures are `AND`-linked for forward references.
+
+## Latest test results (2026-01-22)
+- test_coroutines_min.b: PASS (prints “Coroutines work” x5 and “Lines: 5”).
+- test_coroutines_resume.b: PASS (“Resume ok”).
+- test_coroutines_delete.b: PASS (“Delete ok”).
+- test_coroutines_resume_cross.b: FAIL (stalls after “Running INTCODE...”).
+
+Version: 1
