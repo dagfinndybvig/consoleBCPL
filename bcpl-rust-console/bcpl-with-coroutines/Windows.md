@@ -1,7 +1,7 @@
-# Windows Cross-Compile Plan (Rust / BCPL INTCODE with Coroutines)
+# Windows Cross-Compile (Completed)
 
-## Goal
-Build the coroutine-enabled Rust `icint` binary for Windows on Ubuntu, then use it to compile and run BCPL programs in this folder.
+## Status
+The Windows GNU cross-compile setup for the coroutine-enabled Rust `icint` is complete. Use the steps below to rebuild or verify the Windows binary and run BCPL programs on Windows.
 
 ---
 
@@ -54,8 +54,7 @@ compile.bat test_coroutines_min.b -iinput.txt -ooutput.txt
 
 Check output.txt and error.txt after the run.
 
----
-
 ## Notes
 - The GNU target is the simplest for a command-line app.
 - If the build fails due to missing linker tools, re-check mingw-w64 installation.
+- The Windows build/run script is [bcpl-with-coroutines/compile.bat](bcpl-with-coroutines/compile.bat).
