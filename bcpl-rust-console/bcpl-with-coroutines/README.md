@@ -31,6 +31,25 @@ This layout is implemented in [bcpl-with-coroutines/coroutines](bcpl-with-corout
 - `./compile.sh` works on simple programs (for example, [bcpl-rust-console/test.b](bcpl-rust-console/test.b)).
 - The coroutine test [bcpl-with-coroutines/test_coroutines_inline.b](bcpl-with-coroutines/test_coroutines_inline.b) compiles but still fails at runtime (previously `UNKNOWN EXEC` and earlier an out-of-bounds panic in `F1_S` dispatch).
 
+## Minimal coroutine smoke test (primary)
+- The primary smoke test is [bcpl-with-coroutines/test_coroutines_min.b](bcpl-with-coroutines/test_coroutines_min.b) (caller + callee, two yields, return-to-caller check).
+- Run it from this folder with fixed input/output and stderr capture:
+	- `./compile.sh test_coroutines_min.b -iinput.txt -ooutput.txt > error.txt`
+- Always check both output.txt and error.txt after a run; overwrite them once you no longer need the contents.
+
+### Expected output order (output.txt)
+1. Coroutines work
+2. Coroutines work
+3. Coroutines work
+4. Coroutines work
+5. Coroutines work
+6. Lines: 5
+
+If the return value check fails, the test prints "RETURN MISMATCH" before stopping.
+
+### Debug logging
+Set `BCPL_CO_DEBUG=1` to emit coroutine state traces from the interpreter to stderr (captured in error.txt).
+
 ## Last known failure notes
 - Runtime `UNKNOWN EXEC` suggests the coroutine’s `pc` is not restored to a valid instruction boundary or the stack frame is malformed.
 - The out-of-bounds panic occurred in `F1_S` (`self.m[d] = a`), indicating corrupted `d` or `sp` leading to invalid memory accesses.

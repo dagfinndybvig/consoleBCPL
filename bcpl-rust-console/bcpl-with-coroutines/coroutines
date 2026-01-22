@@ -37,7 +37,7 @@ $( LET C = GETVEC(SIZE + 7)
    IF C=0 RESULTIS 0
    SP0 := C + 7
 
-   C!0 := SP0            // saved stack pointer
+   C!0 := SP0 + 1        // saved stack pointer (frame base)
    C!1 := COROENTRY      // saved pc (entry)
    C!2 := 0              // parent link
    C!3 := COLIST         // coroutine list link
@@ -47,6 +47,8 @@ $( LET C = GETVEC(SIZE + 7)
 
    SP0!0 := 0
    SP0!1 := 0
+   SP0!2 := SP0
+   SP0!3 := 0
 
    COLIST := C
    RESULTIS C

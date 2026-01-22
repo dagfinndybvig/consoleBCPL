@@ -46,6 +46,10 @@ fi
 
 to_crlf "$1" "$TMP_DIR/source.b"
 
+if [ -f "$ROOT_DIR/input.txt" ]; then
+    cp "$ROOT_DIR/input.txt" "$TMP_DIR/input.txt"
+fi
+
 pushd "$TMP_DIR" >/dev/null
 
 # Concatenate syni and trni
@@ -61,6 +65,10 @@ echo "Compiling OCODE to INTCODE..."
 
 # Run INTCODE
 echo "Running INTCODE..."
-"$ICINT" "$TMP_DIR/INTCODE" $2 $3
+timeout 10s "$ICINT" "$TMP_DIR/INTCODE" $2 $3
+
+if [ -f "$TMP_DIR/output.txt" ]; then
+    cp "$TMP_DIR/output.txt" "$ROOT_DIR/output.txt"
+fi
 
 popd >/dev/null

@@ -2,6 +2,7 @@ use std::env;
 use std::fs::{File, OpenOptions};
 use std::io::{self, Read, Write, BufReader, BufWriter};
 use std::process;
+use std::time::Instant;
 
 // ASCII character codes
 const ASC_TAB: u8 = 8;
@@ -107,6 +108,9 @@ struct BcplState {
     cp: usize,
     ch: i16,
     files: Vec<Option<FileHandle>>,
+    co_debug: bool,
+    co_debug_last: Instant,
+    co_debug_steps: u64,
 }
 
 enum FileHandle {
@@ -134,6 +138,9 @@ impl BcplState {
             cp: 0,
             ch: 0,
             files: vec![None, Some(FileHandle::Stdin), Some(FileHandle::Stdout)],
+            co_debug: false,
+            co_debug_last: Instant::now(),
+            co_debug_steps: 0,
         }
     }
 
@@ -727,6 +734,19 @@ impl BcplState {
         let mut b: i16 = 0;
 
         loop {
+            if self.co_debug {
+                self.co_debug_steps = self.co_debug_steps.wrapping_add(1);
+                if self.co_debug_steps % 1_000_000 == 0 {
+                    if self.co_debug_last.elapsed().as_millis() >= 500 {
+                        let currco = self.m.get(500).copied().unwrap_or(0);
+                        eprintln!(
+                            "TRACE: pc={} sp={} currco={} steps={}",
+                            pc, sp, currco, self.co_debug_steps
+                        );
+                        self.co_debug_last = Instant::now();
+                    }
+                }
+            }
             let w: u16 = self.m[pc as usize] as u16;
             pc = pc.wrapping_add(1);
 
@@ -790,6 +810,16 @@ impl BcplState {
                             }
                             K40_APTOVEC => {
                                 let b_addr = d_addr.wrapping_add(self.m[v_ptr + 1] as u16).wrapping_add(1);
+                                if self.co_debug {
+                                    eprintln!(
+                                        "APTOVEC: sp={} d_addr={} argc={} b_addr={} pc={}",
+                                        sp,
+                                        d_addr,
+                                        self.m[v_ptr + 1],
+                                        b_addr,
+                                        pc
+                                    );
+                                }
                                 self.m[b_addr as usize] = sp as i16;
                                 self.m[b_addr as usize + 1] = pc as i16;
                                 self.m[b_addr as usize + 2] = d_addr as i16;  // BUG FIX: was 'd', should be 'd_addr'
@@ -841,6 +871,24 @@ impl BcplState {
                                 let currco_addr = self.m[v_ptr + 2] as u16 as usize;
 
                                 let currco = self.m[currco_addr] as u16 as usize;
+                                if self.co_debug {
+                                    eprintln!(
+                                        "CHANGECO enter: arg={} currco_addr={} currco={} -> cptr={} sp={} pc={}",
+                                        arg, currco_addr, currco, cptr, sp, pc
+                                    );
+                                    if cptr < self.m.len().saturating_sub(6) {
+                                        eprintln!(
+                                            "CHANGECO cptr fields: sp={} pc={} parent={} next={} f={} size={} self={}",
+                                            self.m[cptr],
+                                            self.m[cptr + 1],
+                                            self.m[cptr + 2],
+                                            self.m[cptr + 3],
+                                            self.m[cptr + 4],
+                                            self.m[cptr + 5],
+                                            self.m[cptr + 6]
+                                        );
+                                    }
+                                }
                                 if currco != 0 {
                                     self.m[currco] = sp as i16;
                                     self.m[currco + 1] = pc as i16;
@@ -850,6 +898,12 @@ impl BcplState {
                                 sp = self.m[cptr] as u16;
                                 pc = self.m[cptr + 1] as u16;
                                 a = arg;
+                                if self.co_debug {
+                                    eprintln!(
+                                        "CHANGECO exit: currco_addr={} currco={} sp={} pc={}",
+                                        currco_addr, cptr, sp, pc
+                                    );
+                                }
                             }
                             _ => self.halt("UNKNOWN CALL", a),
                         }
@@ -969,6 +1023,10 @@ impl BcplState {
 fn main() {
     let mut state = BcplState::new();
     state.init();
+    state.co_debug = env::var("BCPL_CO_DEBUG")
+        .ok()
+        .map(|v| v != "0")
+        .unwrap_or(false);
 
     let args: Vec<String> = env::args().skip(1).collect();
     
