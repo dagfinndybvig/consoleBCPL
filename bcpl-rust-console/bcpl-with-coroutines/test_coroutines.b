@@ -1,27 +1,30 @@
 GET "LIBHDR"
 GET "coroutines"
 
-LET Worker(Arg) = VALOF
-$( LET V = Arg
+LET WORKER(ARG) = VALOF
+$( 
    $(
+      LET VAL = ?
       WRITES("worker got ")
-      WRITEN(V)
+      WRITEF("%I", ARG)
       NEWLINE()
-      V := Cowait(V+1)
+      VAL := COWAIT(ARG+1)
    $) REPEAT
 $)
 
 LET START() BE
-$( Initco()
-   LET C = Createco(Worker, 200)
-   LET V = 1
-   V := Callco(C, V)
+$( 
+   LET C = ?
+   LET V = ?
+   INITCO()
+   C := CREATECO(WORKER, 5000)  
+   V := CALLCO(C, 1)
    WRITES("main got ")
-   WRITEN(V)
+   WRITEF("%I", V)
    NEWLINE()
-   V := Resumeco(C, 10)
+   // V := RESUMECO(C, 10)
    WRITES("main got ")
-   WRITEN(V)
+   WRITEF("%I", V)
    NEWLINE()
-   Deleteco(C)
+   DELETECO(C)
 $)
