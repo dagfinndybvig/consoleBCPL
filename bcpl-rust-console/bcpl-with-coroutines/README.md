@@ -38,6 +38,7 @@ This layout is implemented in [bcpl-with-coroutines/coroutines](bcpl-with-corout
 ## Build/test status
 - `./compile.sh` works on simple programs (for example, [bcpl-rust-console/test.b](bcpl-rust-console/test.b)).
 - The coroutine test [bcpl-with-coroutines/test_coroutines_inline.b](bcpl-with-coroutines/test_coroutines_inline.b) compiles but still fails at runtime (previously `UNKNOWN EXEC` and earlier an out-of-bounds panic in `F1_S` dispatch).
+- Windows cross-compile instructions and a Windows build/run script are in [bcpl-with-coroutines/Windows.md](bcpl-with-coroutines/Windows.md) and [bcpl-with-coroutines/compile.bat](bcpl-with-coroutines/compile.bat).
 
 ## Minimal coroutine smoke test (primary)
 - The primary smoke test is [bcpl-with-coroutines/test_coroutines_min.b](bcpl-with-coroutines/test_coroutines_min.b) (caller + callee, two yields, return-to-caller check).
