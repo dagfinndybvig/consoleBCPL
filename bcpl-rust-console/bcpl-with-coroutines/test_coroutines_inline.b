@@ -89,7 +89,7 @@ $( LET PARENT = CURRCO!2
 $)
 
 LET WORKER(ARG) = VALOF
-$( LET V = ARG
+$( LET V = 1
    WHILE TRUE DO
    $(
       WRITES("worker got ")
@@ -104,11 +104,12 @@ $( LET C = 0
    LET V = 1
    INITCO()
    C := CREATECO(WORKER, 200)
-   V := CALLCO(C, V)
+   V := CALLCO(C, 1)
    WRITES("main got ")
    WRITEN(V)
    NEWLINE()
-   V := RESUMECO(C, 10)
+   // V := RESUMECO(C, 10)
+   V := CALLCO(C, 10)
    WRITES("main got ")
    WRITEN(V)
    NEWLINE()
