@@ -38,7 +38,7 @@ This layout is implemented in [bcpl-with-coroutines/coroutines](bcpl-with-corout
 ## Build/test status
 - `./compile.sh` works on simple programs (for example, [bcpl-rust-console/test.b](bcpl-rust-console/test.b)).
 - The coroutine test [bcpl-with-coroutines/test_coroutines_inline.b](bcpl-with-coroutines/test_coroutines_inline.b) compiles but still fails at runtime (previously `UNKNOWN EXEC` and earlier an out-of-bounds panic in `F1_S` dispatch).
-- Windows cross-compile instructions and a Windows build/run script are in [bcpl-with-coroutines/Windows.md](bcpl-with-coroutines/Windows.md) and [bcpl-with-coroutines/compile.bat](bcpl-with-coroutines/compile.bat).
+- Windows cross-compile is complete; instructions and the Windows build/run script are in [bcpl-with-coroutines/Windows.md](bcpl-with-coroutines/Windows.md) and [bcpl-with-coroutines/compile.bat](bcpl-with-coroutines/compile.bat).
 
 ## Minimal coroutine smoke test (primary)
 - The primary smoke test is [bcpl-with-coroutines/test_coroutines_min.b](bcpl-with-coroutines/test_coroutines_min.b) (caller + callee, two yields, return-to-caller check).
@@ -83,9 +83,11 @@ Set `BCPL_CO_DEBUG=1` to emit coroutine state traces from the interpreter to std
 ## Fresh-start checklist
 1. Re-validate the calling convention used by `APTOVEC` and the runtime stack frame layout in `icint`.
 2. Rebuild coroutine entry using `APTOVEC` so the first resume goes through a known-good frame.
-3. Add a minimal coroutine test that yields exactly once, then exits cleanly.
-4. Add debug prints in the interpreter to log `sp`, `pc`, and `CURRCO` around `CHANGECO`.
-5. Confirm `CURRCO` and `COLIST` are in `GLOBAL` and that all procedures are `AND`-linked for forward references.
+3. Run the Linux test baseline and confirm 3/4 passing (min/resume/delete) and cross-resume still failing.
+4. Confirm the same 3/4 baseline on Windows (already validated).
+5. Add a minimal coroutine test that yields exactly once, then exits cleanly.
+6. Add debug prints in the interpreter to log `sp`, `pc`, and `CURRCO` around `CHANGECO`.
+7. Confirm `CURRCO` and `COLIST` are in `GLOBAL` and that all procedures are `AND`-linked for forward references.
 
 ## Latest test results (2026-01-22)
 - test_coroutines_min.b: PASS (prints “Coroutines work” x5 and “Lines: 5”).
@@ -93,4 +95,4 @@ Set `BCPL_CO_DEBUG=1` to emit coroutine state traces from the interpreter to std
 - test_coroutines_delete.b: PASS (“Delete ok”).
 - test_coroutines_resume_cross.b: FAIL (stalls after “Running INTCODE...”).
 
-Version: 1
+Version: 2
