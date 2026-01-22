@@ -1,11 +1,11 @@
-Compiling test_coroutines_min.b to OCODE...
+Compiling test_coroutines_delete.b to OCODE...
 
 BCPL 1
 
-TREE SIZE 1857
+TREE SIZE 1797
 
 PHASE 1 COMPLETE
 Compiling OCODE to INTCODE...
 
-PROGRAM LENGTH = 554
+PROGRAM LENGTH = 500
 Running INTCODE...

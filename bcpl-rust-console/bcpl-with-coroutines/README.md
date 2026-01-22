@@ -23,6 +23,14 @@ The current runtime uses a coroutine control block with the following word layou
 
 This layout is implemented in [bcpl-with-coroutines/coroutines](bcpl-with-coroutines/coroutines) and [bcpl-with-coroutines/coroutines.b](bcpl-with-coroutines/coroutines.b), and the interpreter expects this in `CHANGECO` in [bcpl-with-coroutines/src/main.rs](bcpl-with-coroutines/src/main.rs).
 
+### Coroutine entry frame (APTOVEC-style)
+`CREATECO` now seeds a minimal frame so the first `CHANGECO` lands in `COROENTRY`:
+- `C!0` = `SP0 + 1` (frame base)
+- `SP0!0` = previous `sp` (0 for new coroutine)
+- `SP0!1` = return `pc` (0 for new coroutine)
+- `SP0!2` = saved `d_addr` (frame pointer)
+- `SP0!3` = argument count (0 for `COROENTRY`)
+
 ## Interpreter changes (details)
 - Added K‑codes `GETVEC`/`FREEVEC` and a small allocator in [bcpl-with-coroutines/src/main.rs](bcpl-with-coroutines/src/main.rs).
 - `CHANGECO` now saves both `sp` and `pc` into the current control block and restores both from the target control block.
@@ -46,6 +54,10 @@ This layout is implemented in [bcpl-with-coroutines/coroutines](bcpl-with-corout
 6. Lines: 5
 
 If the return value check fails, the test prints "RETURN MISMATCH" before stopping.
+
+## Additional stabilization tests
+- [bcpl-with-coroutines/test_coroutines_resume.b](bcpl-with-coroutines/test_coroutines_resume.b): validates the `RESUMECO(CURRCO, A)` self-resume return path.
+- [bcpl-with-coroutines/test_coroutines_delete.b](bcpl-with-coroutines/test_coroutines_delete.b): validates `DELETECO` only when parentless.
 
 ### Debug logging
 Set `BCPL_CO_DEBUG=1` to emit coroutine state traces from the interpreter to stderr (captured in error.txt).

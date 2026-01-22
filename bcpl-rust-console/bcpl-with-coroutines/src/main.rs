@@ -2,7 +2,6 @@ use std::env;
 use std::fs::{File, OpenOptions};
 use std::io::{self, Read, Write, BufReader, BufWriter};
 use std::process;
-use std::time::Instant;
 
 // ASCII character codes
 const ASC_TAB: u8 = 8;
@@ -109,8 +108,6 @@ struct BcplState {
     ch: i16,
     files: Vec<Option<FileHandle>>,
     co_debug: bool,
-    co_debug_last: Instant,
-    co_debug_steps: u64,
 }
 
 enum FileHandle {
@@ -139,8 +136,6 @@ impl BcplState {
             ch: 0,
             files: vec![None, Some(FileHandle::Stdin), Some(FileHandle::Stdout)],
             co_debug: false,
-            co_debug_last: Instant::now(),
-            co_debug_steps: 0,
         }
     }
 
@@ -734,19 +729,6 @@ impl BcplState {
         let mut b: i16 = 0;
 
         loop {
-            if self.co_debug {
-                self.co_debug_steps = self.co_debug_steps.wrapping_add(1);
-                if self.co_debug_steps % 1_000_000 == 0 {
-                    if self.co_debug_last.elapsed().as_millis() >= 500 {
-                        let currco = self.m.get(500).copied().unwrap_or(0);
-                        eprintln!(
-                            "TRACE: pc={} sp={} currco={} steps={}",
-                            pc, sp, currco, self.co_debug_steps
-                        );
-                        self.co_debug_last = Instant::now();
-                    }
-                }
-            }
             let w: u16 = self.m[pc as usize] as u16;
             pc = pc.wrapping_add(1);
 
@@ -870,6 +852,13 @@ impl BcplState {
                                 let cptr = self.m[v_ptr + 1] as u16 as usize;
                                 let currco_addr = self.m[v_ptr + 2] as u16 as usize;
 
+                                if cptr == 0 || cptr + 1 >= self.m.len() {
+                                    self.halt("BAD CHANGECO C", 0);
+                                }
+                                if currco_addr >= self.m.len() {
+                                    self.halt("BAD CURRCO", 0);
+                                }
+
                                 let currco = self.m[currco_addr] as u16 as usize;
                                 if self.co_debug {
                                     eprintln!(
@@ -897,6 +886,12 @@ impl BcplState {
                                 self.m[currco_addr] = cptr as i16;
                                 sp = self.m[cptr] as u16;
                                 pc = self.m[cptr + 1] as u16;
+                                if sp as usize >= self.m.len() || (sp as usize) < PROGSTART {
+                                    self.halt("BAD CHANGECO SP", sp as i16);
+                                }
+                                if pc as usize >= self.m.len() || (pc as usize) < PROGSTART {
+                                    self.halt("BAD CHANGECO PC", pc as i16);
+                                }
                                 a = arg;
                                 if self.co_debug {
                                     eprintln!(
