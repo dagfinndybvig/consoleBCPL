@@ -57,7 +57,7 @@ cat "$SYN" "$TRN" > "synitrni"
 
 # Compile BCPL to OCODE
 echo "Compiling $1 to OCODE..."
-"$ICINT" "$ROOT_DIR/synitrni" -i"$TMP_DIR/source.b"
+"$ICINT" "$TMP_DIR/synitrni" -i"$TMP_DIR/source.b"
 
 # Compile OCODE to INTCODE
 echo "Compiling OCODE to INTCODE..."
