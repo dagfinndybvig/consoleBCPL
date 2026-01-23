@@ -573,11 +573,21 @@ impl BcplState {
 
     fn halt(&mut self, msg: &str, n: i16) -> ! {
         self.cos = self.sysprint;
-        let msg_str = if n != 0 {
+        // If coroutine debugging is enabled, prepend a brief debug line
+        // into the output so post-mortem logs contain additional context
+        // even if stderr is not captured.
+        let mut msg_str = if n != 0 {
             format!("{} #{}\n", msg, n)
         } else {
             format!("{}\n", msg)
         };
+        if self.co_debug {
+            let dbg = format!("DEBUG HALT: {} #{} (lomem={} files={} )\n", msg, n, self.lomem, self.files.len());
+            msg_str = format!("{}{}", dbg, msg_str);
+            // Also emit to stderr so interactive runs will show it immediately.
+            eprintln!("{}", dbg.trim_end());
+        }
+
         match &mut self.files[self.cos] {
             Some(FileHandle::Writer(w)) => {
                 let _ = w.write(msg_str.as_bytes());
@@ -914,6 +924,10 @@ impl BcplState {
                                 // does not persist between invocations. CREATECO should
                                 // initialize `C!7` to 0 when the coroutine is created.
                                 if cptr + 7 < self.m.len() {
+                                    if self.co_debug {
+                                        let prev = self.m[cptr + 7];
+                                        eprintln!("CHANGECO: stashing starter-arg at C!7 (cptr={}): prev={} -> arg={}", cptr, prev, arg);
+                                    }
                                     self.m[cptr + 7] = arg;
                                 }
 
@@ -971,6 +985,12 @@ impl BcplState {
                     } else {
                         let d_idx = d_addr as usize;
                         if d_idx + 1 >= self.m.len() {
+                            if self.co_debug {
+                                eprintln!("BAD FRAME detected: d_addr={} d_idx={} len={} a={} sp={} pc={}", d_addr, d_idx, self.m.len(), a, sp, pc);
+                                let start = if d_idx > 10 { d_idx - 10 } else { 0 };
+                                let end = (d_idx + 10).min(self.m.len());
+                                eprintln!("MEM around d_addr {}..{} = {:?}", start, end, &self.m[start..end]);
+                            }
                             self.halt("BAD FRAME", d_addr as i16);
                         }
                         self.m[d_idx] = sp as i16;

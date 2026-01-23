@@ -48,46 +48,91 @@ The coroutine control block (`C`) is a small vector; the important slots are:
 
 ---
 
-## Minimal working example (based on `test_coroutines_min.b`) ✅
+## Working example (based on `test_coroutines_inline.b`) ✅
 
-Save this as `mini_coroutine.b` into the `bcpl-with-coroutines` folder (or copy from `test_coroutines_min.b`):
+Use the test program `test_coroutines_inline.b` as a clear, working example of coroutine interaction. Save or open `test_coroutines_inline.b` under `bcpl-with-coroutines` and run it with `./compile.sh test_coroutines_inline.b`.
 
 ```bcpl
 GET "LIBHDR"
-GET "coroutines"
+
+GLOBAL $(
+   CURRCO:500;
+   COLIST:501
+$)
+
+LET ABORT(N) = STOP(N)
+
+LET INITCO() BE
+$( IF CURRCO=0 THEN
+   $( LET C = GETVEC(7)
+      IF C=0 DO ABORT(200)
+      C!0 := LEVEL()
+      C!1 := 0
+      C!2 := 0
+      C!3 := COLIST
+      C!4 := 0
+      C!5 := 0
+      C!6 := C
+      COLIST := C
+      CURRCO := C
+   $)
+$)
+
+AND COROENTRY() BE
+$( LET C = CURRCO
+   LET F = C!4
+   LET ARG = 0
+   IF C!7 NE 0 THEN $( LET SAVED = C!7 ; C!7 := 0 ; ARG := SAVED $) ELSE ARG := COWAIT(C)
+   WHILE TRUE DO
+   $( C := F(ARG)
+      ARG := COWAIT(C)
+   $)
+$)
 
 LET WORKER(ARG) = VALOF
-$( WRITES("Coroutines work")
-   NEWLINE()
-   ARG := COWAIT(ARG+1)
-   WRITES("Coroutines work")
-   NEWLINE()
-   ARG := COWAIT(ARG+1)
-   RESULTIS ARG+1
+$( LET V = 1
+   WHILE TRUE DO
+   $(
+      WRITES("worker got ")
+      WRITEN(V)
+      NEWLINE()
+      V := COWAIT(V+1)
+   $)
 $)
 
 LET START() BE
-$( INITCO()
-   LET C = CREATECO(WORKER, 5000)
-   (void) CALLCO(C, 0)
-   (void) CALLCO(C, 10)
-   WRITES("Coroutines work")
+$( LET C = 0
+   LET V = 1
+   INITCO()
+   C := CREATECO(WORKER, 200)
+   V := CALLCO(C, 1)
+   WRITES("main got ")
+   WRITEN(V)
    NEWLINE()
-   (void) CALLCO(C, 20)
-   IF (CALLCO(C, 30) NE 31) DO STOP(999)
-   WRITES("Lines: 5")
+   V := CALLCO(C, 10)
+   WRITES("main got ")
+   WRITEN(V)
    NEWLINE()
    DELETECO(C)
 $)
 ```
 
-Walk-through:
-- `INITCO()` initializes coroutine globals (`COLIST`, `CURRCO`, etc.).
-- `CREATECO(WORKER, 5000)` allocates a coroutine whose entry is `WORKER`.
-- `CALLCO(C, x)` sends `x` as an argument: the interpreter writes `x` into `C!7` and switches to the coroutine. On first entry `COROENTRY` consumes `C!7` and runs `WORKER(ARG)`.
-- Inside `WORKER`, `COWAIT` yields back to the parent and supplies the next argument when resumed.
+Walk-through (step-by-step):
+- `INITCO()` sets up the global coroutine list and the initial `CURRCO`.
+- `CREATECO(WORKER, 200)` allocates a coroutine `C` seeded to enter `COROENTRY` which will in turn call `WORKER`.
+- `CALLCO(C, 1)` performs a switch to the coroutine and supplies starter-arg `1`. The interpreter stashes the starter-arg in `C!7` so `COROENTRY` consumes it and invokes `WORKER(ARG)`.
+- `WORKER` prints `worker got 1` (its initial `V`), then executes `V := COWAIT(V+1)`. That `COWAIT(V+1)` yields `V+1` (2) back to the caller; therefore the parent receives `2` as the result of `CALLCO`.
+- The parent prints `main got 2`.
+- `CALLCO(C, 10)` resumes the worker and supplies `10` as the next argument: the suspended `COWAIT` returns `10` inside the worker, which assigns `V := 10` and then prints `worker got 10`, then `COWAIT(V+1)` yields `11` back to the parent. The parent prints `main got 11`.
 
-Expected output (in `output.txt`) for the full test: five "Coroutines work" lines and final "Lines: 5".
+Expected output when run:
+1. `worker got 1`
+2. `main got 2`
+3. `worker got 10`
+4. `main got 11`
+
+This example demonstrates the start-up contract (starter-arg via `C!7`), `COWAIT` yielding semantics, and a simple call/resume cycle between the parent and a child coroutine.
+
 
 ---
 
