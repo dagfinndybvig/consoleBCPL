@@ -24,7 +24,10 @@ $)
 AND COROENTRY() BE
 $( LET C = CURRCO
    LET F = C!4
+   // If a starter argument was stashed into the coroutine frame by CHANGECO,
+   // use that value (and clear it); otherwise call COWAIT(C) to obtain arg.
    LET ARG = COWAIT(C)
+   IF C!7 NE 0 THEN $( LET SAVED = C!7 ; C!7 := 0 ; ARG := SAVED $)
    WHILE TRUE DO
    $( C := F(ARG)
       ARG := COWAIT(C)
@@ -37,7 +40,7 @@ $( LET C = GETVEC(SIZE + 7)
    IF C=0 RESULTIS 0
    SP0 := C + 7
 
-   C!0 := SP0 + 1        // saved stack pointer (frame base)
+   C!0 := SP0            // saved stack pointer (frame base)
    C!1 := COROENTRY      // saved pc (entry)
    C!2 := 0              // parent link
    C!3 := COLIST         // coroutine list link

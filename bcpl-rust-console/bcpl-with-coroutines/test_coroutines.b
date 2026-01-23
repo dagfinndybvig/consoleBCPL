@@ -6,7 +6,7 @@ $(
    $(
       LET VAL = ?
       WRITES("worker got ")
-      WRITEF("%I", ARG)
+      WRITEN(ARG)
       NEWLINE()
       VAL := COWAIT(ARG+1)
    $) REPEAT
@@ -20,9 +20,9 @@ $(
    C := CREATECO(WORKER, 500)  
    V := CALLCO(C, 1)
    WRITES("main got ")
-   WRITEF("%I", V)
+   WRITEN(V)
    NEWLINE()
-   // V := RESUMECO(C, 10)
+   V := RESUMECO(C, 10)
    WRITES("main got ")
    WRITEF("%I", V)
    NEWLINE()

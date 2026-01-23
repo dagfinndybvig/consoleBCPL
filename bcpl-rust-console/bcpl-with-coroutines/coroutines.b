@@ -24,7 +24,10 @@ $)
 AND COROENTRY() BE
 $( LET C = CURRCO
    LET F = C!4
+   // If a starter argument was stashed into the coroutine frame by CHANGECO,
+   // use that value (and clear it); otherwise call COWAIT(C) to obtain arg.
    LET ARG = COWAIT(C)
+   IF C!7 NE 0 THEN $( LET SAVED = C!7 ; C!7 := 0 ; ARG := SAVED $)
    WHILE TRUE DO
    $( C := F(ARG)
       ARG := COWAIT(C)

@@ -735,6 +735,17 @@ impl BcplState {
             let w: u16 = self.m[pc as usize] as u16;
             pc = pc.wrapping_add(1);
 
+            if self.co_debug {
+                // preview d without advancing pc
+                if w & (FD_BIT as u16) != 0 {
+                    let val = self.m[pc as usize];
+                    eprintln!("STEP pc={} w={} preview_d={} a={} sp={}", pc.wrapping_sub(1), w, val, a, sp);
+                } else {
+                    let val = w >> FN_BITS;
+                    eprintln!("STEP pc={} w={} preview_d={} a={} sp={}", pc.wrapping_sub(1), w, val, a, sp);
+                }
+            }
+
             // d is unsigned just like in C: register word d
             let mut d: u16 = if w & (FD_BIT as u16) != 0 {
                 let val = self.m[pc as usize];
@@ -891,6 +902,15 @@ impl BcplState {
                                 }
 
                                 self.m[currco_addr] = cptr as i16;
+
+                                // Stash the incoming arg into the coroutine frame so the
+                                // coroutine entry stub can find it even if 'a' is clobbered
+                                // by initial entry instructions. Use slot cptr+7 (unused
+                                // in the standard coroutine frame layout).
+                                if cptr + 7 < self.m.len() {
+                                    self.m[cptr + 7] = arg;
+                                }
+
                                 sp = self.m[cptr] as u16;
                                 pc = self.m[cptr + 1] as u16;
                                 if sp as usize >= self.m.len() || (sp as usize) < PROGSTART {
@@ -899,15 +919,48 @@ impl BcplState {
                                 if pc as usize >= self.m.len() || (pc as usize) < PROGSTART {
                                     self.halt("BAD CHANGECO PC", pc as i16);
                                 }
+
+                                // Also set register a to the arg for immediate visibility
+                                // (back-compat with calling convention)
                                 a = arg;
                                 if self.co_debug {
                                     eprintln!(
                                         "CHANGECO exit: currco_addr={} currco={} sp={} pc={}",
                                         currco_addr, cptr, sp, pc
                                     );
+                                    if (pc as usize) < self.m.len() {
+                                        let start = pc as usize;
+                                        let end = (start + 10).min(self.m.len());
+                                        eprintln!("MEM @pc {}..{} = {:?}", start, end, &self.m[start..end]);
+                                    }
                                 }
                             }
-                            _ => self.halt("UNKNOWN CALL", a),
+                            _ => {
+                                if self.co_debug {
+                                    eprintln!(
+                                        "UNKNOWN CALL: a={} v_ptr={} d_addr={} d={} sp={} pc={}",
+                                        a, v_ptr, d_addr, d, sp, pc
+                                    );
+                                    if (pc as usize) < self.m.len() {
+                                        let end = (pc as usize + 10).min(self.m.len());
+                                        eprintln!("MEM @pc {}..{} = {:?}", pc, pc+10, &self.m[pc as usize..end]);
+                                    }
+                                    if (sp as usize) < self.m.len() {
+                                        let s = sp as usize;
+                                        let start = s.saturating_sub(5);
+                                        let end = (s + 5).min(self.m.len());
+                                        eprintln!("MEM @sp {}..{} = {:?}", start, end, &self.m[start..end]);
+                                    }
+                                    // If available, dump memory around the frame base 'd' we used
+                                    let d_usize = d as usize;
+                                    if d_usize < self.m.len() {
+                                        let start = d_usize.saturating_sub(5);
+                                        let end = (d_usize + 10).min(self.m.len());
+                                        eprintln!("MEM @d {}..{} = {:?}", start, end, &self.m[start..end]);
+                                    }
+                                }
+                                self.halt("UNKNOWN CALL", a);
+                            },
                         }
                     } else {
                         let d_idx = d_addr as usize;
