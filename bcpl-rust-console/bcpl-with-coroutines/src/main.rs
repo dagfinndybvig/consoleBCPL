@@ -93,6 +93,34 @@ const ENDSTREAMCH: i16 = -1;
 const BYTESPERWORD: usize = 2;
 
 // Global state
+struct WatchRegion {
+    start: usize,
+    end: usize,
+    label: String,
+    triggered: bool,
+    // Snapshot of the first N words of the region at allocation time
+    snapshot: Vec<i16>,
+    // Optionally recorded first-write info: (idx, pc, sp, a, old, new)
+    first_write: Option<(usize, u16, u16, i16, i16, i16)>,
+}
+
+struct InstrRec {
+    pc: u16,
+    w: u16,
+    d: u16,
+    a: i16,
+    sp: u16,
+}
+
+struct WriteRec {
+    idx: usize,
+    pc: u16,
+    sp: u16,
+    a: i16,
+    old: i16,
+    new: i16,
+}
+
 struct BcplState {
     m: Vec<i16>,
     lomem: usize,
@@ -108,6 +136,17 @@ struct BcplState {
     ch: i16,
     files: Vec<Option<FileHandle>>,
     co_debug: bool,
+    watch_regions: Vec<WatchRegion>,
+    // Last instruction context for write-site reporting
+    last_pc: u16,
+    last_sp: u16,
+    last_a: i16,
+    instr_count: u64,
+    instr_history: std::collections::VecDeque<InstrRec>,
+    history_size: usize,
+    // Recent write provenance buffer (only used when co_debug is enabled)
+    recent_writes: std::collections::VecDeque<WriteRec>,
+    recent_writes_limit: usize,
 }
 
 enum FileHandle {
@@ -136,6 +175,15 @@ impl BcplState {
             ch: 0,
             files: vec![None, Some(FileHandle::Stdin), Some(FileHandle::Stdout)],
             co_debug: false,
+            watch_regions: Vec::new(),
+            last_pc: 0,
+            last_sp: 0,
+            last_a: 0,
+            instr_count: 0,
+            instr_history: std::collections::VecDeque::with_capacity(512),
+            history_size: 512,
+            recent_writes: std::collections::VecDeque::with_capacity(1024),
+            recent_writes_limit: 1024,
         }
     }
 
@@ -151,11 +199,18 @@ impl BcplState {
 
     fn set_byte(&mut self, byte_idx: usize, val: u8) {
         let word_idx = byte_idx >> 1;
-        let word = self.m[word_idx] as u16;
+        let old_word = self.m[word_idx];
+        let word = old_word as u16;
         if byte_idx & 1 != 0 {
             self.m[word_idx] = ((word & 0x00FF) | ((val as u16) << 8)) as i16;
         } else {
             self.m[word_idx] = ((word & 0xFF00) | (val as u16)) as i16;
+        }
+        // Check whether this write touched any watched region
+        let new_word = self.m[word_idx];
+        if new_word != old_word {
+            self.check_write_index(word_idx, self.last_pc, self.last_sp, self.last_a);
+            self.record_write(word_idx, self.last_pc, self.last_sp, self.last_a, old_word, new_word);
         }
     }
 
@@ -381,6 +436,34 @@ impl BcplState {
                 self.free_list[idx] = (addr + words, size - words);
             }
             self.alloc_sizes[addr] = words;
+            // Zero the returned region to avoid leaking stale data into newly-created
+            // coroutine control blocks or other sensitive structures.
+            for i in addr..(addr + words) {
+                let old = self.m[i];
+                self.m[i] = 0;
+                if self.co_debug && old != self.m[i] {
+                    self.check_write_index(i, self.last_pc, self.last_sp, self.last_a);
+                    self.record_write(i, self.last_pc, self.last_sp, self.last_a, old, self.m[i]);
+                }
+            }
+            if self.co_debug {
+                eprintln!("GETVEC: reused free block zeroed {}..{}", addr, addr + words - 1);
+                self.dump_free_state("after-getvec-reuse");
+            }
+            // If this looks like a coroutine control block allocation, add a watch
+            if words >= 7 {
+                // Check for overlap with existing watch regions
+                for wr in &self.watch_regions {
+                    if wr.start <= addr + words - 1 && wr.end >= addr {
+                        eprintln!("WARNING: GETVEC reuse {}..{} overlaps existing watch {} {}..{}", addr, addr + words - 1, wr.label, wr.start, wr.end);
+                        let start = if addr > 40 { addr - 40 } else { 0 };
+                        let end = (addr + words - 1 + 40).min(self.m.len());
+                        eprintln!("MEM around overlap {}..{} = {:?}", start, end, &self.m[start..end]);
+                        self.dump_free_state("overlap-on-getvec-reuse");
+                    }
+                }
+                self.add_watch_region(addr, addr + words - 1, &format!("alloc@{}", addr));
+            }
             return addr as i16;
         }
 
@@ -395,6 +478,22 @@ impl BcplState {
 
         self.heap_top = start - 1;
         self.alloc_sizes[start] = words;
+        // Zero newly allocated words to avoid garbage in control blocks / stack
+        for i in start..(start + words) {
+            let old = self.m[i];
+            self.m[i] = 0;
+            if self.co_debug && old != self.m[i] {
+                self.check_write_index(i, self.last_pc, self.last_sp, self.last_a);
+                self.record_write(i, self.last_pc, self.last_sp, self.last_a, old, self.m[i]);
+            }
+        }
+        if self.co_debug {
+            eprintln!("GETVEC: allocated and zeroed {}..{}", start, start + words - 1);
+            self.dump_free_state("after-getvec-alloc");
+        }
+        if words >= 7 {
+            self.add_watch_region(start, start + words - 1, &format!("alloc@{}", start));
+        }
         start as i16
     }
 
@@ -422,7 +521,202 @@ impl BcplState {
             merged.push((a, s));
         }
         self.free_list = merged;
+        // If coroutine debugging is enabled, expose the free-list and
+        // a compact view of active allocations to help diagnose
+        // control-block corruption that may be caused by allocator reuse.
+        if self.co_debug {
+            self.dump_free_state("after-freevec");
+        }
+
+        // Sanity: ensure no free block overlaps any watched region or existing allocation
+        for (a, s) in &self.free_list {
+            let free_start = *a;
+            let free_end = a + s - 1;
+            for wr in &self.watch_regions {
+                if (wr.start <= free_end && wr.end >= free_start) {
+                    eprintln!("ALLOC/FREE OVERLAP detected: free {}..{} intersects watch {} {}..{}", free_start, free_end, wr.label, wr.start, wr.end);
+                    eprintln!("watch snapshot: {:?}", wr.snapshot);
+                    let start = if free_start > 40 { free_start - 40 } else { 0 };
+                    let end = (free_end + 40).min(self.m.len());
+                    eprintln!("MEM around overlap {}..{} = {:?}", start, end, &self.m[start..end]);
+                    self.scan_possible_coroutines(start, end);
+                    self.halt("ALLOC/FREE OVERLAP", 0);
+                }
+            }
+            // Also check if there is an active allocation that starts inside this free block
+            for (i, &sz) in self.alloc_sizes.iter().enumerate() {
+                if sz != 0 {
+                    if i >= free_start && i <= free_end {
+                        eprintln!("ALLOC/FREE INCONSISTENCY: free {}..{} contains alloc at {} size={}", free_start, free_end, i, sz);
+                        let start = if free_start > 40 { free_start - 40 } else { 0 };
+                        let end = (free_end + 40).min(self.m.len());
+                        eprintln!("MEM around inconsistency {}..{} = {:?}", start, end, &self.m[start..end]);
+                        self.halt("ALLOC/FREE INCONSISTENCY", 0);
+                    }
+                }
+            }
+        }
         1
+    }
+
+    // Diagnostic helpers -------------------------------------------------
+
+    fn dump_free_state(&self, label: &str) {
+        if !self.co_debug { return; }
+        eprintln!("FREE_STATE {}: free_list={:?}", label, self.free_list);
+        // Show up to 40 non-zero allocation entries (addr, size)
+        let mut entries: Vec<(usize, usize)> = Vec::new();
+        for (i, &sz) in self.alloc_sizes.iter().enumerate() {
+            if sz != 0 {
+                entries.push((i, sz));
+                if entries.len() >= 40 { break; }
+            }
+        }
+        eprintln!("ALLOC_SIZES nonzero (up to 40): {:?}", entries);
+    }
+
+    fn dump_instr_history(&self) {
+        if !self.co_debug { return; }
+        eprintln!("--- INSTR HISTORY (last {}) ---", self.instr_history.len());
+        for rec in &self.instr_history {
+            eprintln!("pc={} w={} d={} a={} sp={}", rec.pc, rec.w, rec.d, rec.a, rec.sp);
+        }
+        eprintln!("--- END INSTR HISTORY ---");
+    }
+
+    fn record_write(&mut self, idx: usize, pc: u16, sp: u16, a: i16, old: i16, new: i16) {
+        if !self.co_debug { return; }
+        let wr = WriteRec { idx, pc, sp, a, old, new };
+        self.recent_writes.push_back(wr);
+        if self.recent_writes.len() > self.recent_writes_limit {
+            self.recent_writes.pop_front();
+        }
+    }
+
+    fn dump_recent_writes(&self, start: usize, end: usize) {
+        if !self.co_debug { return; }
+        eprintln!("--- RECENT WRITES in {}..{} (last {}) ---", start, end, self.recent_writes.len());
+        for wr in &self.recent_writes {
+            if wr.idx >= start && wr.idx <= end {
+                eprintln!("WRITE idx={} pc={} sp={} a={} old={} new={}", wr.idx, wr.pc, wr.sp, wr.a, wr.old, wr.new);
+            }
+        }
+        eprintln!("--- END RECENT WRITES ---");
+    }
+
+    fn decode_instr(&self, rec: &InstrRec) -> String {
+        let w = rec.w;
+        let fn_code = (w & (F7_X as u16)) as u16;
+        let mut s = format!("pc={} w={} d={} a={} sp={}", rec.pc, rec.w, rec.d, rec.a, rec.sp);
+        match fn_code {
+            0 => s = format!("{} => L: load literal d={} -> a", s, rec.d),
+            1 => s = format!("{} => S: store a -> [d]", s),
+            2 => s = format!("{} => A: add d to a -> a", s),
+            3 => s = format!("{} => J: jump pc := d", s),
+            4 => s = format!("{} => T: if a!=0 pc := d ; (conditional)", s),
+            5 => s = format!("{} => F: if a==0 pc := d ; (conditional)", s),
+            6 => {
+                // K ops: need to show d_addr and potential vector ptr
+                let d_addr = rec.d.wrapping_add(rec.sp);
+                if rec.a < PROGSTART as i16 {
+                    s = format!("{} => K: syscall a={} v_ptr_calc=(d_addr+2)={} d_addr={} (syscall)", s, rec.a, d_addr + 2, d_addr);
+                } else {
+                    s = format!("{} => K: frame call variant a={} d_addr={} (frame op)", s, rec.a, d_addr);
+                }
+            }
+            7 => s = format!("{} => X: extended op d={} (alu/other)", s, rec.d),
+            _ => s = format!("{} => UNKNOWN_FN", s),
+        }
+        s
+    }
+
+    fn dump_decoded_history(&self, n: usize) {
+        if !self.co_debug { return; }
+        eprintln!("--- DECODED HISTORY (last {}) ---", n);
+        let len = self.instr_history.len();
+        let start = if len > n { len - n } else { 0 };
+        for rec in self.instr_history.iter().skip(start) {
+            eprintln!("  {}", self.decode_instr(rec));
+        }
+        eprintln!("--- END DECODED HISTORY ---");
+    }
+
+    fn add_watch_region(&mut self, start: usize, end: usize, label: &str) {
+        if !self.co_debug { return; }
+        // Keep watch only for reasonably-sized regions and avoid too many regions
+        if end <= start { return; }
+        if self.watch_regions.len() > 200 { return; }
+        let len = end - start + 1;
+        let snap_len = std::cmp::min(16, len);
+        let snapshot = self.m[start..(start + snap_len)].to_vec();
+        let wr = WatchRegion {
+            start,
+            end,
+            label: label.to_string(),
+            triggered: false,
+            snapshot,
+            first_write: None,
+        };
+        eprintln!("WATCH: adding region {} {}..{} (snapshot_len={})", label, start, end, snap_len);
+        self.watch_regions.push(wr);
+    }
+
+    fn check_write_index(&mut self, idx: usize, pc: u16, sp: u16, a: i16) {
+        if !self.co_debug { return; }
+        for wr in self.watch_regions.iter_mut() {
+            if wr.triggered { continue; }
+            if idx >= wr.start && idx <= wr.end {
+                // Determine snapshot offset and old value
+                let offset = idx - wr.start;
+                let old = if offset < wr.snapshot.len() { wr.snapshot[offset] } else { 0 };
+                let new = self.m[idx];
+                if new != old {
+                    wr.triggered = true;
+                    wr.first_write = Some((idx, pc, sp, a, old, new));
+                    eprintln!("WATCH-HIT {} idx={} pc={} sp={} a={} old={} new={}", wr.label, idx, pc, sp, a, old, new);
+                    // Also dump a small memory window around the hit for context
+                    let start = if idx > 20 { idx - 20 } else { 0 };
+                    let end = (idx + 20).min(self.m.len());
+                    eprintln!("MEM around hit {}..{} = {:?}", start, end, &self.m[start..end]);
+                }
+            }
+        }
+    }
+
+    fn scan_possible_coroutines(&self, start: usize, end: usize) {
+        if !self.co_debug { return; }
+        let mut found = 0;
+        let s = start.min(self.m.len());
+        let e = end.min(self.m.len());
+        for off in (s..e).step_by(7) {
+            if off + 6 < self.m.len() {
+                let block = &self.m[off..off + 7.min(self.m.len()-off)];
+                let alloc = self.alloc_sizes.get(off).copied().unwrap_or(0);
+                // Heuristics: a coroutine control block usually has a saved pc
+                // (C!1) that lies inside program memory, and a saved sp (C!0)
+                // that is a valid word index.
+                let maybe_pc = block.get(1).copied().unwrap_or(0) as usize;
+                let maybe_sp = block.get(0).copied().unwrap_or(0) as usize;
+                if (alloc >= 7) || (maybe_pc >= PROGSTART && maybe_pc < WORDCOUNT && maybe_sp >= PROGSTART && maybe_sp < WORDCOUNT) {
+                    eprintln!("Possible coroutine @{} alloc={} block={:?}", off, alloc, block);
+                    found += 1;
+                    if found >= 40 { break; }
+                }
+            }
+        }
+        if found == 0 {
+            eprintln!("scan_possible_coroutines: none found in {}..{}", s, e);
+        }
+    }
+
+    fn is_plausible_coroutine(&self, v_ptr: usize) -> bool {
+        // Quick sanity checks for a coroutine control block at v_ptr
+        if v_ptr + 1 >= self.m.len() { return false; }
+        let c0 = self.m[v_ptr] as usize; // saved sp
+        let c1 = self.m[v_ptr + 1] as usize; // saved pc
+        if c0 < PROGSTART || c0 >= WORDCOUNT { return false; }
+        if c1 < PROGSTART || c1 >= WORDCOUNT { return false; }
+        true
     }
 
     fn decval(&self, c: u8) -> i16 {
@@ -496,7 +790,13 @@ impl BcplState {
         let len = self.m[v_ptr] as usize;
         let n = len / BYTESPERWORD;
         
-        self.m[s_ptr + n] = 0;
+        let idx = s_ptr + n;
+        let old = self.m[idx];
+        self.m[idx] = 0;
+        if self.co_debug && old != 0 {
+            self.check_write_index(idx, self.last_pc, self.last_sp, self.last_a);
+            self.record_write(idx, self.last_pc, self.last_sp, self.last_a, old, 0);
+        }
         
         for i in 0..=len {
             self.set_byte(s_ptr * 2 + i, (self.m[v_ptr + i] & 0xFF) as u8);
@@ -510,12 +810,24 @@ impl BcplState {
         let len = self.get_byte(byte_idx) as usize;
         
         for i in 0..=len {
-            self.m[v_ptr + i] = self.get_byte(byte_idx + i) as i16;
+            let idx = v_ptr + i;
+            let old = self.m[idx];
+            self.m[idx] = self.get_byte(byte_idx + i) as i16;
+            if self.co_debug && old != self.m[idx] {
+                self.check_write_index(idx, self.last_pc, self.last_sp, self.last_a);
+                self.record_write(idx, self.last_pc, self.last_sp, self.last_a, old, self.m[idx]);
+            }
         }
     }
 
     fn stw(&mut self, w: i16) {
-        self.m[self.lomem] = w;
+        let idx = self.lomem;
+        let old = self.m[idx];
+        self.m[idx] = w;
+        if self.co_debug && self.m[idx] != old {
+            self.check_write_index(idx, self.last_pc, self.last_sp, self.last_a);
+            self.record_write(idx, self.last_pc, self.last_sp, self.last_a, old, self.m[idx]);
+        }
         self.lomem += 1;
         self.cp = 0;
     }
@@ -772,6 +1084,62 @@ impl BcplState {
                 d = self.m[d as usize] as u16;
             }
 
+            // Update last-instruction context for write-site reporting and
+            // perform immediate canary verification on watched regions (fast; small snapshots).
+            self.last_pc = pc;
+            self.last_sp = sp;
+            self.last_a = a;
+            self.instr_count = self.instr_count.wrapping_add(1);
+
+            // Record instruction into history buffer for focused debugging
+            let rec = InstrRec { pc: pc.wrapping_sub(1), w, d, a, sp };
+            self.instr_history.push_back(rec);
+            if self.instr_history.len() > self.history_size {
+                self.instr_history.pop_front();
+            }
+
+            // Immediate per-instruction check: if any watched region (that hasn't
+            // been triggered by a recorded write) changes compared to its initial
+            // snapshot, that's a corruption event we want to capture immediately.
+            if self.co_debug && !self.watch_regions.is_empty() {
+                for wr in &self.watch_regions {
+                    if wr.triggered { continue; }
+                    for (offset, &orig) in wr.snapshot.iter().enumerate() {
+                        let idx = wr.start + offset;
+                        if idx < self.m.len() && self.m[idx] != orig {
+                            eprintln!("WATCH-CORRUPT {} idx={} pc={} sp={} a={} orig={} now={}", wr.label, idx, pc, sp, a, orig, self.m[idx]);
+                            let start = if idx > 40 { idx - 40 } else { 0 };
+                            let end = (idx + 40).min(self.m.len());
+                            eprintln!("MEM around corrupt {}..{} = {:?}", start, end, &self.m[start..end]);
+                            eprintln!("watch snapshot {:?}", wr.snapshot);
+                            self.dump_free_state("watch-corrupt");
+                            self.scan_possible_coroutines(start, end);
+                            self.dump_recent_writes(start, end);
+                            self.dump_instr_history();
+                            self.dump_decoded_history(80);
+                            self.halt("WATCH-CORRUPT", 0);
+                        }
+                    }
+                }
+            }
+
+            // Periodic deeper verification (less frequent) for broader snapshots
+            if self.co_debug && self.instr_count % 500 == 0 {
+                // verify watches for unexpected changes in snapshoted regions
+                for wr in &self.watch_regions {
+                    if wr.triggered { continue; }
+                    // compare snapshot
+                    for (offset, &orig) in wr.snapshot.iter().enumerate() {
+                        let idx = wr.start + offset;
+                        if idx < self.m.len() && self.m[idx] != orig {
+                            eprintln!("WATCH-CANARY {} mismatch idx={} orig={} now={}", wr.label, idx, orig, self.m[idx]);
+                            let start = if wr.start > 20 { wr.start - 20 } else { 0 };
+                            let end = (wr.end + 20).min(self.m.len());
+                            eprintln!("MEM around canary {}..{} = {:?}", start, end, &self.m[start..end]);
+                        }
+                    }
+                }
+            }
             match w & F7_X as u16 {
                 0 => { // F0_L
                     b = a;
@@ -782,7 +1150,11 @@ impl BcplState {
                     if d_idx >= self.m.len() {
                         self.halt("BAD STORE", d as i16);
                     }
+                    let old_store = self.m[d_idx];
                     self.m[d_idx] = a;
+                    // Instrument writes to detect the first write into watched regions
+                    self.check_write_index(d_idx, pc, sp, a);
+                    self.record_write(d_idx, pc, sp, a, old_store, self.m[d_idx]);
                 }
                 2 => { // F2_A
                     a = a.wrapping_add(d as i16);
@@ -803,9 +1175,37 @@ impl BcplState {
                 6 => { // F6_K
                     let d_addr = d.wrapping_add(sp);
                     if a < PROGSTART as i16 {
-                        let v_ptr = (d_addr + 2) as usize;
+                        let mut v_ptr = (d_addr + 2) as usize;
+
+                        // Diagnostic/fallback: when the computed v_ptr looks invalid
+                        // (out-of-bounds or contains zeroes), scan a small neighborhood
+                        // for a plausible coroutine control block and use it if found.
+                        // This is gated by `co_debug` to collect provenance before
+                        // applying any corrective behavior.
+                        if self.co_debug {
+                            let mut need_scan = false;
+                            if v_ptr >= self.m.len() {
+                                need_scan = true;
+                                eprintln!("K-syscall: v_ptr {} out-of-bounds (len={}), scanning nearby", v_ptr, self.m.len());
+                            } else if self.m[v_ptr] == 0 {
+                                need_scan = true;
+                                eprintln!("K-syscall: v_ptr {} looks zeroed, scanning nearby", v_ptr);
+                            }
+                            if need_scan {
+                                let scan_start = v_ptr.saturating_sub(8);
+                                let scan_end = (v_ptr + 8).min(self.m.len().saturating_sub(1));
+                                for cand in scan_start..=scan_end {
+                                    if self.is_plausible_coroutine(cand) {
+                                        eprintln!("K-syscall: fallback found plausible coroutine at {} (was {})", cand, v_ptr);
+                                        v_ptr = cand;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                         match a {
                             K01_START => {}
+                            K03_ABORT => { /* abort / no-op in interpreter */ }
                             K11_SELECTINPUT => self.cis = self.m[v_ptr] as usize,
                             K12_SELECTOUTPUT => self.cos = self.m[v_ptr] as usize,
                             K13_RDCH => a = self.rdch(),
@@ -830,10 +1230,30 @@ impl BcplState {
                                         pc
                                     );
                                 }
-                                self.m[b_addr as usize] = sp as i16;
-                                self.m[b_addr as usize + 1] = pc as i16;
-                                self.m[b_addr as usize + 2] = d_addr as i16;  // BUG FIX: was 'd', should be 'd_addr'
-                                self.m[b_addr as usize + 3] = self.m[v_ptr + 1];
+                                let idx0 = b_addr as usize;
+                                let old0 = self.m[idx0];
+                                self.m[idx0] = sp as i16;
+                                self.check_write_index(idx0, pc, sp, a);
+                                self.record_write(idx0, pc, sp, a, old0, self.m[idx0]);
+
+                                let idx1 = b_addr as usize + 1;
+                                let old1 = self.m[idx1];
+                                self.m[idx1] = pc as i16;
+                                self.check_write_index(idx1, pc, sp, a);
+                                self.record_write(idx1, pc, sp, a, old1, self.m[idx1]);
+
+                                let idx2 = b_addr as usize + 2;
+                                let old2 = self.m[idx2];
+                                self.m[idx2] = d_addr as i16;  // BUG FIX: was 'd', should be 'd_addr'
+                                self.check_write_index(idx2, pc, sp, a);
+                                self.record_write(idx2, pc, sp, a, old2, self.m[idx2]);
+
+                                let idx3 = b_addr as usize + 3;
+                                let old3 = self.m[idx3];
+                                self.m[idx3] = self.m[v_ptr + 1];
+                                self.check_write_index(idx3, pc, sp, a);
+                                self.record_write(idx3, pc, sp, a, old3, self.m[idx3]);
+
                                 sp = b_addr;
                                 pc = self.m[v_ptr] as u16;
                             }
@@ -893,25 +1313,40 @@ impl BcplState {
                                         "CHANGECO enter: arg={} currco_addr={} currco={} -> cptr={} sp={} pc={}",
                                         arg, currco_addr, currco, cptr, sp, pc
                                     );
-                                    if cptr < self.m.len().saturating_sub(6) {
-                                        eprintln!(
-                                            "CHANGECO cptr fields: sp={} pc={} parent={} next={} f={} size={} self={}",
-                                            self.m[cptr],
-                                            self.m[cptr + 1],
-                                            self.m[cptr + 2],
-                                            self.m[cptr + 3],
-                                            self.m[cptr + 4],
-                                            self.m[cptr + 5],
-                                            self.m[cptr + 6]
-                                        );
+                                    // Dump a small window of the coroutine control block at cptr
+                                    if cptr < self.m.len() {
+                                        let start = cptr;
+                                        let end = (start + 12).min(self.m.len());
+                                        eprintln!("C@{}..{} = {:?}", start, end, &self.m[start..end]);
+                                    }
+                                    // If we have a current coroutine vector pointer, dump it as well
+                                    if currco != 0 && currco < self.m.len() {
+                                        let start = currco;
+                                        let end = (start + 8).min(self.m.len());
+                                        eprintln!("CURRCO@{}..{} = {:?}", start, end, &self.m[start..end]);
+                                    }
+                                    // Also dump a small window around sp and pc for context
+                                    if (sp as usize) < self.m.len() {
+                                        let s = sp as usize;
+                                        let start = s.saturating_sub(10);
+                                        let end = (s + 10).min(self.m.len());
+                                        eprintln!("MEM @sp {}..{} = {:?}", start, end, &self.m[start..end]);
+                                    }
+                                    if (pc as usize) < self.m.len() {
+                                        let start = pc as usize;
+                                        let end = (start + 12).min(self.m.len());
+                                        eprintln!("MEM @pc {}..{} = {:?}", start, end, &self.m[start..end]);
                                     }
                                 }
                                 if currco != 0 {
                                     self.m[currco] = sp as i16;
+                                    self.check_write_index(currco, pc, sp, a);
                                     self.m[currco + 1] = pc as i16;
+                                    self.check_write_index(currco + 1, pc, sp, a);
                                 }
 
                                 self.m[currco_addr] = cptr as i16;
+                                self.check_write_index(currco_addr, pc, sp, a);
 
                                 // Stash the incoming argument into the coroutine frame so
                                 // the coroutine entry code can find it even if register 'a'
@@ -929,6 +1364,7 @@ impl BcplState {
                                         eprintln!("CHANGECO: stashing starter-arg at C!7 (cptr={}): prev={} -> arg={}", cptr, prev, arg);
                                     }
                                     self.m[cptr + 7] = arg;
+                                    self.check_write_index(cptr + 7, pc, sp, a);
                                 }
 
                                 sp = self.m[cptr] as u16;
@@ -967,16 +1403,53 @@ impl BcplState {
                                     }
                                     if (sp as usize) < self.m.len() {
                                         let s = sp as usize;
-                                        let start = s.saturating_sub(5);
-                                        let end = (s + 5).min(self.m.len());
+                                        let start = s.saturating_sub(10);
+                                        let end = (s + 10).min(self.m.len());
                                         eprintln!("MEM @sp {}..{} = {:?}", start, end, &self.m[start..end]);
                                     }
                                     // If available, dump memory around the frame base 'd' we used
                                     let d_usize = d as usize;
                                     if d_usize < self.m.len() {
-                                        let start = d_usize.saturating_sub(5);
-                                        let end = (d_usize + 10).min(self.m.len());
+                                        let start = d_usize.saturating_sub(10);
+                                        let end = (d_usize + 20).min(self.m.len());
                                         eprintln!("MEM @d {}..{} = {:?}", start, end, &self.m[start..end]);
+                                    }
+
+                                    // Show the vector at v_ptr (if valid) and the low-area CURRCO/COLIST words
+                                    if (v_ptr as usize) < self.m.len() {
+                                        let start = v_ptr as usize;
+                                        let end = (start + 8).min(self.m.len());
+                                        eprintln!("VEC @{}..{} = {:?}", start, end, &self.m[start..end]);
+                                    }
+                                    // Print assumed globals at 500/501 (CURRCO/COLIST) for context
+                                    if 500 + 1 < self.m.len() {
+                                        eprintln!("GLOBAL CURRCO/COLIST @500..501 = {:?}", &self.m[500..502]);
+                                    }
+
+                                    // Dump allocator state and scan for coroutine-like blocks to help
+                                    // identify whether an allocation or free might have left a
+                                    // stale value in the control block region.
+                                    self.dump_free_state("unknown-call");
+                                    let scan_start = if d_usize > 200 { d_usize - 200 } else { 0 };
+                                    let scan_end = (d_usize + 200).min(self.m.len());
+                                    self.scan_possible_coroutines(scan_start, scan_end);
+
+                                    // Sanity-check the vector we printed — if it doesn't look
+                                    // like a coroutine control block, emit a specific
+                                    // diagnostic to aid debugging rather than a generic
+                                    // UNKNOWN CALL.
+                                    if (v_ptr as usize) < self.m.len() && !self.is_plausible_coroutine(v_ptr as usize) {
+                                        eprintln!("BAD VEC DETECTED at {}: not plausible coroutine (v_ptr={})", v_ptr, v_ptr);
+                                        // Dump extra context
+                                        let start = if v_ptr as usize > 40 { v_ptr as usize - 40 } else { 0 };
+                                        let end = (v_ptr as usize + 40).min(self.m.len());
+                                        eprintln!("MEM around bad vec {}..{} = {:?}", start, end, &self.m[start..end]);
+                                        self.dump_free_state("bad-vec");
+                                        self.scan_possible_coroutines(start, end);
+                                        self.dump_recent_writes(start, end);
+                                        self.dump_instr_history();
+                                        self.dump_decoded_history(160);
+                                        self.halt("BAD VEC", a);
                                     }
                                 }
                                 self.halt("UNKNOWN CALL", a);
@@ -987,9 +1460,29 @@ impl BcplState {
                         if d_idx + 1 >= self.m.len() {
                             if self.co_debug {
                                 eprintln!("BAD FRAME detected: d_addr={} d_idx={} len={} a={} sp={} pc={}", d_addr, d_idx, self.m.len(), a, sp, pc);
-                                let start = if d_idx > 10 { d_idx - 10 } else { 0 };
-                                let end = (d_idx + 10).min(self.m.len());
+                                let start = if d_idx > 20 { d_idx - 20 } else { 0 };
+                                let end = (d_idx + 20).min(self.m.len());
                                 eprintln!("MEM around d_addr {}..{} = {:?}", start, end, &self.m[start..end]);
+
+                                // Quick scan of a nearby region to see if nearby control blocks look sane
+                                let scan_start = if d_idx > 200 { d_idx - 200 } else { 0 };
+                                let scan_end = (d_idx + 200).min(self.m.len());
+                                let snippet_end = (scan_start + 50).min(scan_end);
+                                eprintln!("MEM scan {}..{} (snippet) = {:?}", scan_start, scan_end, &self.m[scan_start..snippet_end]);
+
+                                // Dump allocator state for additional context
+                                self.dump_free_state("bad-frame");
+
+                                // If possible, attempt to print any coroutine-like vectors near the scan area
+                                for off in (scan_start..scan_end).step_by(7) {
+                                    if off + 6 < self.m.len() {
+                                        let block = &self.m[off..(off + 7).min(self.m.len())];
+                                        eprintln!("Possible block @{}: {:?}", off, block);
+                                    }
+                                }
+
+                                // Take a more thorough scan for likely coroutine control blocks
+                                self.scan_possible_coroutines(scan_start, scan_end);
                             }
                             self.halt("BAD FRAME", d_addr as i16);
                         }
