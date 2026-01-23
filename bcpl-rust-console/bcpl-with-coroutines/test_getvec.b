@@ -1,0 +1,24 @@
+GET "LIBHDR"
+
+LET START() BE
+$( LET V = 0
+   LET I = 0
+   LET N = 5
+
+   // Allocate a vector of N words
+   V := GETVEC(N)
+   IF V = 0 DO $( WRITES("GETVEC FAILED") ; NEWLINE() ; STOP(1) $)
+
+   // Store some values in the vector
+   FOR I = 0 TO N-1 DO V!I := (I + 1) * 10
+
+   // Print the values
+   FOR I = 0 TO N-1 DO
+   $( WRITES("V!") ; WRITEN(I) ; WRITES(" = ") ; WRITEN(V!I) ; NEWLINE() $)
+
+   // Free the vector
+   IF FREEVEC(V) = 0 DO $( WRITES("FREEVEC FAILED") ; NEWLINE() ; STOP(2) $)
+
+   WRITES("TEST PASSED")
+   NEWLINE()
+$)

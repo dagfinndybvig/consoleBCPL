@@ -7,6 +7,7 @@ $( WRITES("Coroutines work")
    ARG := COWAIT(ARG+1)
    WRITES("Coroutines work")
    NEWLINE()
+   //WRITEN(ARG)
    ARG := COWAIT(ARG+1)
    RESULTIS ARG+1
 $)
@@ -21,6 +22,7 @@ $( LET C = 0
    V := CALLCO(C, 10)
    WRITES("Coroutines work")
    NEWLINE()
+   //WRITEN(V)
 
    V := CALLCO(C, 20)
    WRITES("Coroutines work")
