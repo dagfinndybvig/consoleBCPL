@@ -17,7 +17,7 @@ $(
    LET C = ?
    LET V = ?
    INITCO()
-   C := CREATECO(WORKER, 5000)  
+   C := CREATECO(WORKER, 500)  
    V := CALLCO(C, 1)
    WRITES("main got ")
    WRITEF("%I", V)
