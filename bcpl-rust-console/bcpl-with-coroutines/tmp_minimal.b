@@ -1,0 +1,12 @@
+GET "LIBHDR"
+GET "coroutines"
+
+LET F(A) = VALOF
+$( RESULTIS A $)
+
+LET START() BE
+$( INITCO()
+   LET C = CREATECO(F, 10)
+   LET R = CALLCO(C, 5)
+   NEWLINE()
+$)

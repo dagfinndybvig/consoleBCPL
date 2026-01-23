@@ -1,15 +1,19 @@
 # WORK IN PROGRESS
 
 ## What has been done
-- Added coroutine support in the Rust `icint` under bcpl-with-coroutines, including a new K‑code `CHANGECO` and a simple heap allocator that implements `GETVEC`/`FREEVEC` in [bcpl-with-coroutines/src/main.rs](bcpl-with-coroutines/src/main.rs).
-- Added a coroutine runtime library [bcpl-with-coroutines/coroutines](bcpl-with-coroutines/coroutines) and [bcpl-with-coroutines/coroutines.b](bcpl-with-coroutines/coroutines.b) plus a coroutine test program [bcpl-with-coroutines/test_coroutines_inline.b](bcpl-with-coroutines/test_coroutines_inline.b).
-- Added a coroutine-specific header exposing `CHANGECO`, `GETVEC`, and `FREEVEC` in [bcpl-with-coroutines/libhdr](bcpl-with-coroutines/libhdr).
-- Added a coroutine build script [bcpl-with-coroutines/compile.sh](bcpl-with-coroutines/compile.sh) that compiles within the coroutine folder.
+- Implemented coroutine support in the Rust `icint` under bcpl-with-coroutines, including a new K‑code `CHANGECO` and a compact heap allocator that implements `GETVEC`/`FREEVEC` in [src/main.rs](bcpl-with-coroutines/src/main.rs).
+- Added the BCPL coroutine runtime library ([coroutines/](bcpl-with-coroutines/coroutines) and [coroutines.b](bcpl-with-coroutines/coroutines.b)) and several test programs including [test_coroutines_inline.b](bcpl-with-coroutines/test_coroutines_inline.b) and a new allocator demo [test_getvec.b](bcpl-with-coroutines/test_getvec.b).
+- Added a coroutine-specific header exposing `CHANGECO`, `GETVEC`, and `FREEVEC` in [libhdr](bcpl-with-coroutines/libhdr).
+- Added [compile.sh](bcpl-with-coroutines/compile.sh) and helper scripts to build and run tests in this folder.
 
-## Current problems
-- The coroutine test program currently stalls or crashes at runtime (previously an `UNKNOWN EXEC` and then a panic due to out-of-bounds writes).
-- The coroutine control block layout is still being stabilized. The runtime and interpreter have been updated to save/restore both `sp` and `pc`, but the initialization sequence is still fragile.
-- The compiler is picky about syntax and declaration ordering; we had to adjust to `GLOBAL` for coroutine state and remove `REPEAT` syntax.
+## Current problems and recent fixes
+- Recent fix: The interpreter now preserves the initial argument passed during `CHANGECO` by stashing it into the coroutine control block slot `C!7` (interpreter: `self.m[cptr + 7] = arg`), and `COROENTRY` checks/consumes `C!7` if present. This removed many early `UNKNOWN CALL` / `BAD PC` failures and stabilized several tests.
+- Remaining problems: Some tests still fail or hang:
+  - `test_coroutines.b`: runtime failure (`UNKNOWN EXEC` with a negative exec code) — needs focused reproduction and trace analysis.
+  - `test_coroutines_delete.b`: currently times out / hangs during INTCODE run.
+  - `test_coroutines_resume_cross.b`: still reports `UNKNOWN CALL #19` (possible bad `pc` or corrupted frame).
+- The coroutine control block layout has been extended (a dedicated slot for a starter-arg has been added as `C!7`) but the overall calling-convention and entry-frame seeding still need to be made robust and documented.
+- Use `BCPL_CO_DEBUG=1` to enable interpreter coroutine traces for debugging; capture stderr (`error.txt`) when reproducing failures.
 
 ## Control block layout (current attempt)
 The current runtime uses a coroutine control block with the following word layout:
@@ -89,10 +93,14 @@ Set `BCPL_CO_DEBUG=1` to emit coroutine state traces from the interpreter to std
 6. Add debug prints in the interpreter to log `sp`, `pc`, and `CURRCO` around `CHANGECO`.
 7. Confirm `CURRCO` and `COLIST` are in `GLOBAL` and that all procedures are `AND`-linked for forward references.
 
-## Latest test results (2026-01-22)
-- test_coroutines_min.b: PASS (prints “Coroutines work” x5 and “Lines: 5”).
-- test_coroutines_resume.b: PASS (“Resume ok”).
-- test_coroutines_delete.b: PASS (“Delete ok”).
-- test_coroutines_resume_cross.b: FAIL (stalls after “Running INTCODE...”).
+## Latest test results (2026-01-23)
+- test_coroutines_min.b: PASS (prints “Coroutines work” x5 and “Lines: 5”). ✅
+- test_coroutines_resume.b: PASS (“Resume ok”). ✅
+- test_coroutines_inline.b: PASS. ✅
+- test_getvec.b: PASS (allocator demo). ✅
+- test_coroutines.b: FAIL (`UNKNOWN EXEC #-26732`). ✖️
+- test_coroutines_delete.b: TIMEOUT / hang during INTCODE run (exit code 124). ✖️
+- test_coroutines_resume_cross.b: FAIL (`UNKNOWN CALL #19`). ✖️
+- Note: some folders (e.g., `./.crlf-build`) lack a `compile.sh` and are excluded or report harness errors.
 
 Version: 2

@@ -903,10 +903,16 @@ impl BcplState {
 
                                 self.m[currco_addr] = cptr as i16;
 
-                                // Stash the incoming arg into the coroutine frame so the
-                                // coroutine entry stub can find it even if 'a' is clobbered
-                                // by initial entry instructions. Use slot cptr+7 (unused
-                                // in the standard coroutine frame layout).
+                                // Stash the incoming argument into the coroutine frame so
+                                // the coroutine entry code can find it even if register 'a'
+                                // is clobbered by the entry instruction stream.
+                                //
+                                // Contract: interpreter writes the starter-arg into slot
+                                // `C!7` (i.e., `cptr + 7`) before switching. The BCPL
+                                // coroutine entry (`COROENTRY`) will check `C!7`, use the
+                                // value if non-zero, and clear the slot (C!7 := 0) so it
+                                // does not persist between invocations. CREATECO should
+                                // initialize `C!7` to 0 when the coroutine is created.
                                 if cptr + 7 < self.m.len() {
                                     self.m[cptr + 7] = arg;
                                 }

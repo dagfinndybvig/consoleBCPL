@@ -1,0 +1,17 @@
+GET "LIBHDR"
+GET "coroutines"
+
+LET ARGCO(ARG) = VALOF
+$( WRITEN(ARG)
+   NEWLINE()
+   STOP(0)
+$)
+
+LET START() BE
+$( LET C = 0
+   INITCO()
+   C := CREATECO(ARGCO, 100)
+   IF C=0 DO STOP(210)
+
+   CALLCO(C, 4242)
+$)

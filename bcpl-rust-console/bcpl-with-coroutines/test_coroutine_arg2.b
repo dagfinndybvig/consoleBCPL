@@ -1,0 +1,26 @@
+GET "LIBHDR"
+GET "coroutines"
+
+LET ARGWORKER(ARG) = VALOF
+$( WRITES("ARG=")
+   WRITEN(ARG)
+   NEWLINE()
+   ARG := COWAIT(ARG+1)
+   RESULTIS ARG
+$)
+
+LET START() BE
+$( LET C = 0
+   LET V = 0
+   INITCO()
+   C := CREATECO(ARGWORKER, 100)
+   V := CALLCO(C, 4242)
+   IF V NE 4243 DO
+   $( WRITES("ARG MISMATCH")
+      NEWLINE()
+      STOP(500)
+   $)
+   WRITES("TEST PASSED")
+   NEWLINE()
+   DELETECO(C)
+$)

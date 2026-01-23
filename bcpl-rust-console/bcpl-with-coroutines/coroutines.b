@@ -24,10 +24,15 @@ $)
 AND COROENTRY() BE
 $( LET C = CURRCO
    LET F = C!4
-   // If a starter argument was stashed into the coroutine frame by CHANGECO,
-   // use that value (and clear it); otherwise call COWAIT(C) to obtain arg.
-   LET ARG = COWAIT(C)
-   IF C!7 NE 0 THEN $( LET SAVED = C!7 ; C!7 := 0 ; ARG := SAVED $)
+   // Coroutine starter-argument contract:
+   // - The interpreter will stash a starter argument (if any) into slot `C!7`
+   //   before switching to the coroutine via `CHANGECO`.
+   // - `COROENTRY` should check `C!7`; if non-zero it must *consume* the
+   //   value (copy it to ARG and set `C!7 := 0`) so the slot is cleared for
+   //   future invocations. If `C!7` is zero, fall back to `COWAIT(C)` to
+   //   obtain the first argument.
+   LET ARG = 0
+   IF C!7 NE 0 THEN $( LET SAVED = C!7 ; C!7 := 0 ; ARG := SAVED $) ELSE ARG := COWAIT(C)
    WHILE TRUE DO
    $( C := F(ARG)
       ARG := COWAIT(C)
@@ -47,6 +52,7 @@ $( LET C = GETVEC(SIZE + 7)
    C!4 := F              // main procedure
    C!5 := SIZE           // stack size
    C!6 := C              // coroutine pointer
+   C!7 := 0              // RESERVED: starter-arg slot (interpreter may write here on CHANGECO)
 
    SP0!0 := 0
    SP0!1 := 0
