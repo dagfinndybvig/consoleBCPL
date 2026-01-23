@@ -3,7 +3,7 @@ $( LET C = Getvec(Size+6)
 IF C=O RESULTIS 0 
 
 
-C!O := c // resunption pint 
+C!O := C // resunption point 
 C!1 := Currco // prent link 
 C!2 := Colist // Colist chain 
 C!3 := F // main procedure 
