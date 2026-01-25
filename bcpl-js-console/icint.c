@@ -1,4 +1,3 @@
-
 #include "icint.h"
 
 #define byte unsigned char
@@ -136,7 +135,6 @@
 #define ENDSTREAMCH   (-1)
 #define BYTESPERWORD  sizeof(word)
 
-
 fn2(char*, cstr, char*, d, byte*, s) {
   memcpy(d, s + 1, *s);
   d[*s] = 0;
@@ -168,7 +166,46 @@ fn1(short, decval, short, c) {
 }
 
 char strdigits[] = "0123456789ABCDEF";
-short m[WORDCOUNT], lomem, himem = WORDCOUNT - 1, cis, cos, sysin, sysprint;
+short m[WORDCOUNT], lomem, himem = WORDCOUNT - 1, cis, cos, sysin, sysprint, vecfree;
+
+/* Simple vector allocator using the top of memory (himem) and a free list.
+   Block layout (word indices):
+     header word at h: m[h] = size (number of payload words)
+     next pointer at h+1: m[h+1] = next free header index (0 if none)
+     payload begins at h+2 and has 'size' words.
+   GETVEC(n) returns pointer to payload (h+2) or 0 on failure.
+   FREEVEC(p) expects p pointing to payload and pushes header onto free list.
+*/
+
+fn1(short, allocvec, short, n) {
+  short prev = 0, cur = vecfree, next, sz, total, h;
+  if (n <= 0) return 0;
+  /* Search free-list for first-fit */
+  while (cur) {
+    sz = m[cur];
+    next = m[cur + 1];
+    if (sz >= n) {
+      if (prev) m[prev + 1] = next; else vecfree = next;
+      return cur + 2;
+    }
+    prev = cur; cur = next;
+  }
+  /* Allocate from top (grow downward) */
+  total = n + 2; /* header (2) + payload */
+  h = himem - total + 1;
+  if (h <= lomem) return 0; /* not enough memory */
+  m[h] = n; m[h + 1] = 0;
+  himem = h - 1;
+  return h + 2;
+}
+
+fn1(void, freevec, short, p) {
+  short h;
+  if (!p) return;
+  h = p - 2;
+  m[h + 1] = vecfree;
+  vecfree = h;
+}
 
 fn2(short, openfile, char*, fn, short, fm) {
   return
@@ -429,6 +466,8 @@ fetch:
           case K76_WRITEF: writef(v); goto fetch;
           case K85_GETBYTE: a = ((byte*)&m[v[0]])[v[1]]; goto fetch;
           case K86_PUTBYTE: ((byte*)&m[v[0]])[v[1]] = v[2]; goto fetch;
+          case K87_GETVEC: a = allocvec(v[0]); goto fetch;
+          case K88_FREEVEC: freevec(v[0]); goto fetch;
         }
       } else {
         m[d] = sp; m[d + 1] = pc; sp = d; pc = a;
