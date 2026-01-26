@@ -40,7 +40,7 @@ $( LET C = GETVEC(SIZE + 7)
 	IF C=0 RESULTIS 0
 	SP0 := C + 7
 
-	C!0 := SP0 + 1
+	C!0 := SP0
 	C!1 := COROENTRY
 	C!2 := 0
 	C!3 := COLIST

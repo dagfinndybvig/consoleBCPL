@@ -1,0 +1,48 @@
+GET "LIBHDR"
+
+LET CREATECO(F, INIT, LIMIT) = VALOF
+$(
+ LET C = GETVEC(4)
+ IF C=0 RESULTIS 0
+ C!0 := INIT
+ C!1 := LIMIT
+ C!2 := F
+ C!3 := 0
+ RESULTIS C
+$)
+
+AND NEXT(C) = VALOF
+$(
+ LET F = C!2
+ IF F=0 RESULTIS 0
+ RESULTIS F(C)
+$)
+
+AND GENCOUNT(C) = VALOF
+$(
+ LET ST = C!0
+ LET LIMIT = C!1
+ IF ST >= LIMIT RESULTIS 0
+ ST := ST + 1
+ C!0 := ST
+ RESULTIS ST
+ $)
+
+LET START() = VALOF
+ $(
+  LET G = CREATECO(GENCOUNT, 0, 5)
+    LET V = NEXT(G)
+    IF V NE 0 DO WRITEF("YIELD %N*N", V)
+    V := NEXT(G)
+    IF V NE 0 DO WRITEF("YIELD %N*N", V)
+    V := NEXT(G)
+    IF V NE 0 DO WRITEF("YIELD %N*N", V)
+    V := NEXT(G)
+    IF V NE 0 DO WRITEF("YIELD %N*N", V)
+    V := NEXT(G)
+    IF V NE 0 DO WRITEF("YIELD %N*N", V)
+    V := NEXT(G)
+    IF V NE 0 DO WRITEF("YIELD %N*N", V)
+  WRITEF("DONE*N")
+  RESULTIS 0
+ $)
