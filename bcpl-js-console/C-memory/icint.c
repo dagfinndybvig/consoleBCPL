@@ -129,7 +129,7 @@
 #define K87_GETVEC        87
 #define K88_FREEVEC       88
 #define K89_RANDOM        89
-#define K90_MULDIV        90
+#define K90_CHANGECO      90
 #define K91_RESULT2       91
 
 #define ENDSTREAMCH   (-1)
@@ -468,6 +468,29 @@ fetch:
           case K86_PUTBYTE: ((byte*)&m[v[0]])[v[1]] = v[2]; goto fetch;
           case K87_GETVEC: a = allocvec(v[0]); goto fetch;
           case K88_FREEVEC: freevec(v[0]); goto fetch;
+          case K90_CHANGECO: {
+            short arg = v[0];
+            short cptr = v[1];
+            short currco_addr = v[2];
+            short currco;
+
+            if (cptr == 0 || cptr + 1 >= WORDCOUNT) halt("BAD CHANGECO C", 0);
+            if (currco_addr >= WORDCOUNT) halt("BAD CURRCO", 0);
+
+            currco = m[currco_addr];
+            if (currco != 0) {
+              m[currco] = sp;
+              m[currco + 1] = pc;
+            }
+
+            m[currco_addr] = cptr;
+            sp = m[cptr];
+            pc = m[cptr + 1];
+            if ((sp >= WORDCOUNT) || (sp < PROGSTART)) halt("BAD CHANGECO SP", sp);
+            if ((pc >= WORDCOUNT) || (pc < PROGSTART)) halt("BAD CHANGECO PC", pc);
+            a = arg;
+            goto fetch;
+          }
         }
       } else {
         m[d] = sp; m[d + 1] = pc; sp = d; pc = a;
