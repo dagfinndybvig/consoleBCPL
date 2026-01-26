@@ -1,3 +1,11 @@
+
+# Work in progress: Make coroutines library for the memory enhanced version.
+
+Useful for coroutines:
+
+https://archive.org/details/bcpl-for-the-bbc-microcomputer
+
+
 # HISTORICAL NOTE
 
 The C source icint.c kan be found in this folder; it has been extended with getvec/freevec.<br>
@@ -9,11 +17,6 @@ It can be run as ./C_intcode or via C_compile.sh
 The original material is at:<br>
 https://sourceforge.net/p/bcpl-c64/code/HEAD/tree/
 
-### Work in progress: Make coroutines library for the memory enhanced version.
-
-Useful for coroutines:
-
-https://archive.org/details/bcpl-for-the-bbc-microcomputer
 
 
 ## ----- From the C version that is now ported to Node.js ----
