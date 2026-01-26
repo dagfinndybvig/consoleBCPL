@@ -107,7 +107,7 @@ const K86_PUTBYTE = 86;
 const K87_GETVEC = 87;
 const K88_FREEVEC = 88;
 const K89_RANDOM = 89;
-const K90_MULDIV = 90;
+const K90_CHANGECO = 90;
 const K91_RESULT2 = 91;
 
 const ENDSTREAMCH = -1;
@@ -121,7 +121,7 @@ const mu = new Uint16Array(buffer); // Unsigned view
 let lomem = 0;
 let himem = WORDCOUNT - 1;
 let cis = 0;
-let cos = 0;
+let coutfd = 0;
 let sysin = 0;
 let sysprint = 0;
 let vecfree = 0; // free-list head for vector allocator
@@ -203,9 +203,9 @@ function endread() {
 }
 
 function endwrite() {
-    if (cos !== sysprint) {
-        fs.closeSync(cos - 1);
-        cos = sysprint;
+    if (coutfd !== sysprint) {
+        fs.closeSync(coutfd - 1);
+        coutfd = sysprint;
     }
 }
 
@@ -226,12 +226,12 @@ function wrch(c) {
         newline();
     } else {
         const buffer1 = Buffer.from([c]);
-        fs.writeSync(cos - 1, buffer1, 0, 1);
+        fs.writeSync(coutfd - 1, buffer1, 0, 1);
     }
 }
 
 function newline() {
-    fs.writeSync(cos - 1, "\n");
+    fs.writeSync(coutfd - 1, "\n");
 }
 
 function writes(s_ptr) {
@@ -410,9 +410,9 @@ function labref(n, a) {
 }
 
 function halt(msg, n) {
-    cos = sysprint;
+    coutfd = sysprint;
     const str = msg + (n ? " #" + n : "") + "\n";
-    fs.writeSync(cos - 1, str);
+    fs.writeSync(coutfd - 1, str);
     process.exit(-1);
 }
 
@@ -537,11 +537,11 @@ function interpret() {
                         case K03_ABORT: break;
                         case K04_BACKTRACE: break;
                         case K11_SELECTINPUT: cis = m[v_ptr]; break;
-                        case K12_SELECTOUTPUT: cos = m[v_ptr]; break;
+                        case K12_SELECTOUTPUT: coutfd = m[v_ptr]; break;
                         case K13_RDCH: a = rdch(); break;
                         case K14_WRCH: wrch(m[v_ptr]); break;
                         case K16_INPUT: a = cis; break;
-                        case K17_OUTPUT: a = cos; break;
+                        case K17_OUTPUT: a = coutfd; break;
                         case K30_STOP: return m[v_ptr];
                         case K31_LEVEL: a = sp; break;
                         case K32_LONGJUMP: sp = m[v_ptr]; pc = m[v_ptr + 1]; break;
@@ -579,6 +579,29 @@ function interpret() {
                         } break;
                         case K87_GETVEC: a = allocvec(m[v_ptr]); break;
                         case K88_FREEVEC: freevec(m[v_ptr]); break;
+                        case K90_CHANGECO: {
+                            let arg = m[v_ptr];
+                            let cptr = m[v_ptr + 1];
+                            let currco_addr = m[v_ptr + 2];
+                            let currco;
+
+                            if (cptr <= 0 || cptr + 6 >= WORDCOUNT) halt("BAD CHANGECO C", 0);
+                            if (currco_addr < 0 || currco_addr >= WORDCOUNT) halt("BAD CURRCO", 0);
+
+                            currco = m[currco_addr];
+                            if (currco !== 0) {
+                                if (currco < 0 || currco + 1 >= WORDCOUNT) halt("BAD CURRCO VAL", 0);
+                                m[currco] = sp;
+                                m[currco + 1] = pc;
+                            }
+
+                            m[currco_addr] = cptr;
+                            sp = m[cptr];
+                            pc = m[cptr + 1];
+                            if ((sp >= WORDCOUNT) || (sp < PROGSTART)) halt("BAD CHANGECO SP", sp);
+                            if ((pc >= WORDCOUNT) || (pc < PROGSTART)) halt("BAD CHANGECO PC", pc);
+                            a = arg;
+                        } break;
                     }
                 } else {
                     m[d] = sp; m[d + 1] = pc; sp = d; pc = a;
@@ -650,7 +673,7 @@ function init() {
     stw(F6_K | (2 << FN_BITS));
     stw(F7_X | (22 << FN_BITS));
     cis = sysin = 1;
-    cos = sysprint = 2;
+    coutfd = sysprint = 2;
 }
 
 function pipeinput(fn) {
@@ -662,7 +685,7 @@ function pipeinput(fn) {
 function pipeoutput(fn) {
     const f = openfile(fn, 'w');
     if (!f) halt(STR_NO_OUTPUT, 0);
-    cos = sysprint = f;
+    coutfd = sysprint = f;
 }
 
 function main() {
