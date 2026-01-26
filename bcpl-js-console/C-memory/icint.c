@@ -474,10 +474,13 @@ fetch:
             short currco_addr = v[2];
             short currco;
 
+            fprintf(stderr, "CHANGECO enter: arg=%d cptr=%d currco_addr=%d sp=%d pc=%d\n", arg, cptr, currco_addr, sp, pc);
+
             if (cptr == 0 || cptr + 1 >= WORDCOUNT) halt("BAD CHANGECO C", 0);
             if (currco_addr >= WORDCOUNT) halt("BAD CURRCO", 0);
 
             currco = m[currco_addr];
+            fprintf(stderr, "  currco from addr: %d\n", currco);
             if (currco != 0) {
               m[currco] = sp;
               m[currco + 1] = pc;
@@ -486,6 +489,7 @@ fetch:
             m[currco_addr] = cptr;
             sp = m[cptr];
             pc = m[cptr + 1];
+            fprintf(stderr, "CHANGECO load: new sp=%d pc=%d\n", sp, pc);
             if ((sp >= WORDCOUNT) || (sp < PROGSTART)) halt("BAD CHANGECO SP", sp);
             if ((pc >= WORDCOUNT) || (pc < PROGSTART)) halt("BAD CHANGECO PC", pc);
             a = arg;

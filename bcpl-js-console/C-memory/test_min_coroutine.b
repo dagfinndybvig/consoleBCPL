@@ -1,0 +1,25 @@
+GET "LIBHDR"
+
+GLOBAL $(
+	CURRCO:500;
+	COLIST:501
+$)
+
+LET ABORT(N) = STOP(N)
+
+LET START() = VALOF
+$( LET C = GETVEC(7)
+   IF C=0 RESULTIS 0
+
+   C!0 := 401
+   C!1 := 401
+   C!2 := 0
+   C!3 := COLIST
+   C!4 := 0
+   C!5 := C
+
+   COLIST := C
+   CURRCO := C
+
+   RESULTIS CHANGECO(1, C, @CURRCO)
+$)
