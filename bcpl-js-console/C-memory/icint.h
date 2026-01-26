@@ -2,10 +2,18 @@
 #ifdef __GNUC__
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
+#include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+#ifndef stricmp
+#define stricmp strcasecmp
+#endif
 #define memclr(d,l) memset(d,0,l)
 #define __ANSI_FUNCTION__
 

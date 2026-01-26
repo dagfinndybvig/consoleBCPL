@@ -166,9 +166,7 @@ fn1(short, decval, short, c) {
 }
 
 char strdigits[] = "0123456789ABCDEF";
-short m[WORDCOUNT], lomem, himem = WORDCOUNT - 1, cis, cos, sysin, sysprint, vecfree;
-int co_dump_after_change = 0;
-int co_trace_count = 0;
+short m[WORDCOUNT], lomem, himem = WORDCOUNT - 1, cis, coutfd, sysin, sysprint, vecfree;
 
 /* Simple vector allocator using the top of memory (himem) and a free list.
    Block layout (word indices):
@@ -227,13 +225,13 @@ fn1(short, findoutput, byte*, fn) {
 }
 
 fn0(void, endread) {
-  close(cis - 1);
+  (void)close(cis - 1);
   cis = sysin;
 }
 
 fn0(void, endwrite) {
-  close(cos - 1);
-  cos = sysprint;
+  (void)close(coutfd - 1);
+  coutfd = sysprint;
 }
 
 fn0(short, rdch) {
@@ -242,11 +240,11 @@ fn0(short, rdch) {
 }
 
 fn0(void, newline) {
-  write(cos - 1, "\n", 1);
+  (void)write(coutfd - 1, "\n", 1);
 }
 
 fn1(void, wrch, byte, c) {
-  if (c == ASC_LF) newline(); else write(cos - 1, &c, 1);
+  if (c == ASC_LF) newline(); else (void)write(coutfd - 1, &c, 1);
 }
 
 fn1(void, writes, byte*, s) {
@@ -345,11 +343,11 @@ fn2(void, labref, short, n, short, a) {
 }
 
 fn1(void, writecstr, char*, s) {
-  write(cos - 1, s, strlen(s));
+  (void)write(coutfd - 1, s, strlen(s));
 }
 
 fn2(void, halt, char*, msg, short, n) {
-  cos = sysprint;
+  coutfd = sysprint;
   writecstr(msg);
   if (n) { writecstr(" #"); writen(n); }
   newline();
@@ -418,26 +416,15 @@ sw:
 fn0(short, interpret) {
   register word w, d, pc, sp;
   register short a, b, *v;
-  int _co_i, _co_lim;
   pc = PROGSTART;
   sp = lomem;
   a = b = 0;
 fetch:
-  if (co_dump_after_change) {
-    fprintf(stderr, "--- post-CHANGECO fetch dump: pc=%d sp=%d\n", pc, sp);
-    _co_lim = (pc + 10 < WORDCOUNT) ? pc + 10 : WORDCOUNT - 1;
-    fprintf(stderr, "code @pc:"); for (_co_i = pc; _co_i <= _co_lim; ++_co_i) fprintf(stderr, " %d", m[_co_i]); fprintf(stderr, "\n");
-    _co_lim = (sp + 10 < WORDCOUNT) ? sp + 10 : WORDCOUNT - 1;
-    fprintf(stderr, "stack @sp:"); for (_co_i = sp; _co_i <= _co_lim; ++_co_i) fprintf(stderr, " %d", m[_co_i]); fprintf(stderr, "\n");
-    co_dump_after_change = 0;
-  }
+  /* debug dumps removed for clean interpreter */
   d = (w = m[pc++]) & FD_BIT ? m[pc++] : w >> FN_BITS;
   if (w & FP_BIT) d += sp;
   if (w & FI_BIT) d = m[d];
-  if (co_trace_count) {
-    fprintf(stderr, "TRACE fetch: pc=%d w=%d d=%d a=%d b=%d sp=%d\n", pc-1, w, d, a, b, sp);
-    co_trace_count--;
-  }
+  /* fetch trace removed */
   switch (w & F7_X) {
     case F0_L: b = a; a = d; goto fetch;
     case F1_S: m[d] = a; goto fetch;
@@ -451,20 +438,18 @@ fetch:
         switch (a) {
           default: halt(STR_UNKNOWN_CALL, a);
           case K11_SELECTINPUT : cis = *v; goto fetch;
-          case K12_SELECTOUTPUT: cos = *v; goto fetch;
+          case K12_SELECTOUTPUT: coutfd = *v; goto fetch;
           case K13_RDCH: a = rdch(); goto fetch;
           case K14_WRCH: wrch(*v); goto fetch;
           case K16_INPUT: a = cis; goto fetch;
-          case K17_OUTPUT: a = cos; goto fetch;
+          case K17_OUTPUT: a = coutfd; goto fetch;
           case K30_STOP: return *v;
           case K31_LEVEL: a = sp; goto fetch;
           case K32_LONGJUMP: sp = v[0]; pc = v[1]; goto fetch;
           case K40_APTOVEC:
             b = d + v[1] + 1;
-            if (co_trace_count) fprintf(stderr, "K40_APTOVEC: d=%d v0=%d v1=%d -> b=%d sp=%d pc=%d\n", d, v[0], v[1], b, sp, pc);
             m[b] = sp; m[b + 1] = pc; m[b + 2] = d; m[b + 3] = v[1];
             sp = b; pc = v[0];
-            if (co_trace_count) fprintf(stderr, "K40_APTOVEC after: new sp=%d pc=%d m[b]=%d m[b+1]=%d m[b+2]=%d m[b+3]=%d\n", sp, pc, m[b], m[b+1], m[b+2], m[b+3]);
             goto fetch;
           case K41_FINDOUTPUT: a = findoutput((byte*)&m[*v]); goto fetch;
           case K42_FINDINPUT: a = findinput((byte*)&m[*v]); goto fetch;
@@ -491,30 +476,12 @@ fetch:
             short currco_addr = v[2];
             short currco;
 
-            fprintf(stderr, "CHANGECO enter: arg=%d cptr=%d currco_addr=%d sp=%d pc=%d\n", arg, cptr, currco_addr, sp, pc);
-
-            if (cptr <= 0 || cptr + 6 >= WORDCOUNT) {
-              fprintf(stderr, "BAD CHANGECO Cptr out of range: %d\n", cptr);
-              halt("BAD CHANGECO C", 0);
-            }
-            if (currco_addr < 0 || currco_addr >= WORDCOUNT) {
-              fprintf(stderr, "BAD CURRCO ADDR: %d\n", currco_addr);
-              halt("BAD CURRCO", 0);
-            }
-
-            /* dump cptr control block for inspection */
-              fprintf(stderr, "  cptr block: [%d]=%d [%d]=%d [%d]=%d [%d]=%d [%d]=%d [%d]=%d\n",
-                      cptr, m[cptr], cptr+1, m[cptr+1], cptr+2, m[cptr+2], cptr+3, m[cptr+3],
-                      cptr+4, m[cptr+4], cptr+5, m[cptr+5], cptr+6, m[cptr+6]);
-              fprintf(stderr, "  mem layout: lomem=%d himem=%d PROGSTART=%d WORDCOUNT=%d\n", lomem, himem, PROGSTART, WORDCOUNT);
+            if (cptr <= 0 || cptr + 6 >= WORDCOUNT) halt("BAD CHANGECO C", 0);
+            if (currco_addr < 0 || currco_addr >= WORDCOUNT) halt("BAD CURRCO", 0);
 
             currco = m[currco_addr];
-            fprintf(stderr, "  currco index at addr %d = %d\n", currco_addr, currco);
             if (currco != 0) {
-              if (currco < 0 || currco + 1 >= WORDCOUNT) {
-                fprintf(stderr, "BAD CURRCO VALUE: %d\n", currco);
-                halt("BAD CURRCO VAL", 0);
-              }
+              if (currco < 0 || currco + 1 >= WORDCOUNT) halt("BAD CURRCO VAL", 0);
               m[currco] = sp;
               m[currco + 1] = pc;
             }
@@ -522,18 +489,9 @@ fetch:
             m[currco_addr] = cptr;
             sp = m[cptr];
             pc = m[cptr + 1];
-            fprintf(stderr, "CHANGECO load: new sp=%d pc=%d\n", sp, pc);
-            if ((sp >= WORDCOUNT) || (sp < PROGSTART)) {
-              fprintf(stderr, "BAD CHANGECO SP range: %d\n", sp);
-              halt("BAD CHANGECO SP", sp);
-            }
-            if ((pc >= WORDCOUNT) || (pc < PROGSTART)) {
-              fprintf(stderr, "BAD CHANGECO PC range: %d\n", pc);
-              halt("BAD CHANGECO PC", pc);
-            }
+            if ((sp >= WORDCOUNT) || (sp < PROGSTART)) halt("BAD CHANGECO SP", sp);
+            if ((pc >= WORDCOUNT) || (pc < PROGSTART)) halt("BAD CHANGECO PC", pc);
             a = arg;
-            co_dump_after_change = 1;
-            co_trace_count = 16;
             goto fetch;
           }
         }
@@ -598,7 +556,7 @@ fn0(void, init) {
   stw(F6_K | (2 << FN_BITS));
   stw(F7_X | (22 << FN_BITS));
   cis = sysin = STDIN_FILENO + 1;
-  cos = sysprint = STDOUT_FILENO + 1;
+    coutfd = sysprint = STDOUT_FILENO + 1;
 }
 
 fn1(void, pipeinput, char*, fn) {
@@ -610,7 +568,7 @@ fn1(void, pipeinput, char*, fn) {
 fn1(void, pipeoutput, char*, fn) {
   short f = openfile(fn, O_CREAT | O_WRONLY | O_TRUNC);
   if (!f) halt(STR_NO_OUTPUT, errno);
-  cos = sysprint = f;
+  coutfd = sysprint = f;
 }
 
 #ifdef NO_ARGS
