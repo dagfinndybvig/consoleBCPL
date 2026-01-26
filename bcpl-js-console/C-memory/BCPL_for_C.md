@@ -47,6 +47,7 @@ Practical notes for C contributors
 ---------------------------------
 - The interpreter keeps several implementation-specific details (word-size, vector layout, reserved `PROGSTART` area). When editing `icint.c` or writing BCPL glue code, respect the reserved ranges and the vector header conventions.
 - Error checking in `icint.c` uses `halt()` for fatal interpreter errors; keep these checks when changing allocation/stack logic to avoid silent corruption.
+ - Output file descriptor: the interpreter uses a local variable `coutfd` (previously named `cos` in older versions) to hold the runtime output file descriptor/index. When making changes to I/O handlers, prefer `coutfd`.
 
 Where to look in the repository
 ------------------------------

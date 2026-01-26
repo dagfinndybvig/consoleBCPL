@@ -240,11 +240,15 @@ fn0(short, rdch) {
 }
 
 fn0(void, newline) {
-  (void)write(coutfd - 1, "\n", 1);
+  ssize_t rc = write(coutfd - 1, "\n", 1);
+  (void)rc;
 }
 
 fn1(void, wrch, byte, c) {
-  if (c == ASC_LF) newline(); else (void)write(coutfd - 1, &c, 1);
+  if (c == ASC_LF) newline(); else {
+    ssize_t rc = write(coutfd - 1, &c, 1);
+    (void)rc;
+  }
 }
 
 fn1(void, writes, byte*, s) {
@@ -343,7 +347,8 @@ fn2(void, labref, short, n, short, a) {
 }
 
 fn1(void, writecstr, char*, s) {
-  (void)write(coutfd - 1, s, strlen(s));
+  ssize_t rc = write(coutfd - 1, s, strlen(s));
+  (void)rc;
 }
 
 fn2(void, halt, char*, msg, short, n) {
@@ -437,6 +442,7 @@ fetch:
         v = &m[d + 2];
         switch (a) {
           default: halt(STR_UNKNOWN_CALL, a);
+          /* fallthrough */
           case K11_SELECTINPUT : cis = *v; goto fetch;
           case K12_SELECTOUTPUT: coutfd = *v; goto fetch;
           case K13_RDCH: a = rdch(); goto fetch;
@@ -502,6 +508,7 @@ fetch:
     case F7_X:
       switch (d) {
         default: halt(STR_UNKNOWN_EXEC, d);
+        /* fallthrough */
         case  1: a = m[a]; goto fetch;
         case  2: a = -a; goto fetch;
         case  3: a = ~a; goto fetch;
