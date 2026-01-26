@@ -1,9 +1,14 @@
 # NOTE: Historical reference
 
 The C source icint.c kan be found in this folder; it has been extended with getvec/freevec.
-It has also been built with:<br>
+It has been built with:<br>
 gcc -O2 -std=c99 -Wall -Wextra -DO_BINARY=0 -Dstricmp=strcasecmp -include unistd.h -o C_icint icint.c<br>
+
 It can be run as C_intcode or via C_compile.sh
+
+The original material is at:<br>
+https://sourceforge.net/p/bcpl-c64/code/HEAD/tree/
+
 
 ## ----- From the C version that is now ported to Node.js ----
 
