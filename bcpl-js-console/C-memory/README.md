@@ -1,5 +1,5 @@
 
-# Work in progress: Make coroutines library for the memory enhanced version.
+# Work in progress: Coroutines library for the memory enhanced version.
 
 Useful for coroutines:
 
