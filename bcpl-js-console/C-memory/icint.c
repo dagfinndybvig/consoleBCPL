@@ -520,6 +520,11 @@ fn1(short, loadcode, char*, fn) {
 }
 
 fn0(void, init) {
+  /* Reserve top-of-memory area for label table and metadata so
+     GETVEC allocations won't overlap it at runtime. Initialize
+     the vector free-list. */
+  himem = WORDCOUNT - LABVCOUNT - 1;
+  vecfree = 0;
   for (lomem = 0; lomem < PROGSTART; ++lomem) m[lomem] = lomem;
   stw(F0_L | FI_BIT | (K01_START << FN_BITS));
   stw(F6_K | (2 << FN_BITS));
