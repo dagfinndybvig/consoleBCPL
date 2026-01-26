@@ -1,4 +1,4 @@
-# NOTE: Historical reference
+# HISTORICAL NOTE
 
 The C source icint.c kan be found in this folder; it has been extended with getvec/freevec.<br>
 It has been built with:<br>
