@@ -6,7 +6,8 @@ Useful for extensions beyond "The language and its compiler" book:
 https://archive.org/details/bcpl-for-the-bbc-microcomputer
 
 
-# HISTORICAL NOTE
+
+# BACKGROUND
 
 The C source icint.c kan be found in this folder; it has been extended with getvec/freevec.<br>
 It has been built with:<br>
@@ -19,7 +20,8 @@ https://sourceforge.net/p/bcpl-c64/code/HEAD/tree/
 
 
 
-## ----- From the C version that is now ported to Node.js ----
+
+## ----- From the Sourceforge project ----
 
 Here you will find a small INTCODE interpreter written in C. The code not only compiles using CC65 (C64),
 but also with GCC, Laser C (ATARI ST), Megamax C (ATARI ST), Pure C (ATARI ST) and Sozobon C (Atari ST).
