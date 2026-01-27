@@ -1,7 +1,7 @@
 
 # Work in progress: Extending C version of BCPL
 
-Useful for extensions beyond BCPL: The language and its compiler:
+Useful for extensions beyond BCPL: The language and its compiler
 
 https://archive.org/details/bcpl-for-the-bbc-microcomputer
 
