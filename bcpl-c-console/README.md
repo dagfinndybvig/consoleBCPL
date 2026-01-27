@@ -1,7 +1,7 @@
 
-# Work in progress: Coroutines library for the memory enhanced version.
+# Work in progress: Extending C version of BCPL
 
-Useful for coroutines:
+Useful for extensions beyond "The language and its compiler" book:
 
 https://archive.org/details/bcpl-for-the-bbc-microcomputer
 
