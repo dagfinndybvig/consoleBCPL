@@ -1,11 +1,11 @@
 
 # Work in progress: Extending C version of BCPL
 
-Useful for extensions beyond "The language and its compiler" book:
+Useful for extensions beyond BCPL: The language and its compiler:
 
 https://archive.org/details/bcpl-for-the-bbc-microcomputer
 
-
+<br>
 
 # BACKGROUND
 
@@ -18,7 +18,7 @@ It can be run as ./C_intcode or via C_compile.sh
 The original material is at:<br>
 https://sourceforge.net/p/bcpl-c64/code/HEAD/tree/
 
-
+<br>
 
 
 ## ----- From the Sourceforge project ----
