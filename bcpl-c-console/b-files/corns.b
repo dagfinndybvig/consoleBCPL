@@ -12,13 +12,13 @@ LET INITCO() BE
 $( IF CURRCO=0 THEN
 	$( LET C = GETVEC(7)
 		IF C=0 DO ABORT(200)
-		C!0 := LEVEL()
+		C!0 := C
 		C!1 := 0
 		C!2 := 0
 		C!3 := COLIST
 		C!4 := 0
 		C!5 := 0
-		C!6 := C
+		
 		COLIST := C
 		CURRCO := C
 	$)
@@ -96,9 +96,19 @@ $( LET PARENT = CURRCO!2
 	RESULTIS CHANGECO(A, CPTR)
 $)
 
-LET RUN() BE
+LET ROUTINE1() BE
 $(
+WRITES("*N---ROUTINE1---*N*N")
+COWAIT(100) 
+$)
+
+LET RUN() BE
+$( LET C, V = ?, ?
 	WRITES("TRYING IT*N")
+	
+	C := CREATECO(ROUTINE1,400)
+	V := CALLCO(C,99)
+	WRITEN(V)
 $)
 
 LET START() BE RUN()

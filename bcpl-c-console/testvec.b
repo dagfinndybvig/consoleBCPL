@@ -2,7 +2,7 @@ GET "LIBHDR"
 
 LET START() = VALOF
 $(
-  LET N = 500
+  LET N = 5
   LET V = ?  
   LET I = 0
 
