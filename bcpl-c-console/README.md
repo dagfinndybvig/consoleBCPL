@@ -14,7 +14,11 @@ From the original source I built with this command to make sure it worked with L
 
 gcc -O2 -std=c99 -Wall -Wextra -DO_BINARY=0 -Dstricmp=strcasecmp -include unistd.h -o C_icint icint.c<br>
 
-It can be run as ./C_intcode or via C_compile.sh
+The current version compiled with just:
+
+gcc icint.c -o C_icint
+
+It can be run as ./C_icint or via C_compile.sh
 
 The original material is at:<br>
 https://sourceforge.net/p/bcpl-c64/code/HEAD/tree/
