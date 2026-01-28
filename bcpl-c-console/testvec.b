@@ -1,3 +1,10 @@
+// Testing the C-version with GETVEC/FREEVEC
+// Should also work on the JS version based on that
+// In the bcpls-c-console directory:
+// ./C_compile testvec.b
+// ./JS_compile testvec.b
+
+
 GET "LIBHDR"
 
 LET START() = VALOF
