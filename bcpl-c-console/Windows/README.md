@@ -5,7 +5,7 @@ Usage:
 - From `bcpl-c-console` run the script:
 
   ```bash
-  ./Windows/compile.sh
+  ./Windows/Cross_compile.sh
   ```
 
 - Or use `make` from the `Windows` folder:
