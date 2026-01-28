@@ -10,7 +10,7 @@ https://archive.org/details/bcpl-for-the-bbc-microcomputer
 # BACKGROUND
 
 The C source icint.c kan be found in this folder; it has been extended with getvec/freevec.<br>
-From the original source it was built with this command to make sure it worked with Linux:<br>
+From the original source I built with this command to make sure it worked with Linux:<br>
 
 gcc -O2 -std=c99 -Wall -Wextra -DO_BINARY=0 -Dstricmp=strcasecmp -include unistd.h -o C_icint icint.c<br>
 
