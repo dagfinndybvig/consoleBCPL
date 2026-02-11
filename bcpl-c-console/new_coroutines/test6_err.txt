@@ -1,0 +1,40 @@
+CHANGECO enter: arg=0 cptr=19184 currco_addr=500 currco=19393 sp=1244 pc=693
+  cptr fields: [0]sp=19191 [1]pc=570 [2]parent=19393 [3]next=19393 [4]fn=870 [5]size=200 [6]self=19184
+  saved currco[19393]: sp=1244 pc=693
+CHANGECO exit: new_sp=19191 new_pc=570 a=0
+CHANGECO enter: arg=19184 cptr=19393 currco_addr=500 currco=19184 sp=19195 pc=813
+  cptr fields: [0]sp=1244 [1]pc=693 [2]parent=0 [3]next=0 [4]fn=0 [5]size=0 [6]self=19393
+  saved currco[19184]: sp=19195 pc=813
+CHANGECO exit: new_sp=1244 new_pc=693 a=19184
+CHANGECO enter: arg=0 cptr=18975 currco_addr=500 currco=19393 sp=1244 pc=693
+  cptr fields: [0]sp=18982 [1]pc=570 [2]parent=19393 [3]next=19184 [4]fn=870 [5]size=200 [6]self=18975
+  saved currco[19393]: sp=1244 pc=693
+CHANGECO exit: new_sp=18982 new_pc=570 a=0
+CHANGECO enter: arg=18975 cptr=19393 currco_addr=500 currco=18975 sp=18986 pc=813
+  cptr fields: [0]sp=1244 [1]pc=693 [2]parent=0 [3]next=0 [4]fn=0 [5]size=0 [6]self=19393
+  saved currco[18975]: sp=18986 pc=813
+CHANGECO exit: new_sp=1244 new_pc=693 a=18975
+CHANGECO enter: arg=0 cptr=18766 currco_addr=500 currco=19393 sp=1244 pc=693
+  cptr fields: [0]sp=18773 [1]pc=570 [2]parent=19393 [3]next=18975 [4]fn=870 [5]size=200 [6]self=18766
+  saved currco[19393]: sp=1244 pc=693
+CHANGECO exit: new_sp=18773 new_pc=570 a=0
+CHANGECO enter: arg=18766 cptr=19393 currco_addr=500 currco=18766 sp=18777 pc=813
+  cptr fields: [0]sp=1244 [1]pc=693 [2]parent=0 [3]next=0 [4]fn=0 [5]size=0 [6]self=19393
+  saved currco[18766]: sp=18777 pc=813
+CHANGECO exit: new_sp=1244 new_pc=693 a=18766
+CHANGECO enter: arg=5 cptr=19184 currco_addr=500 currco=19393 sp=1244 pc=779
+  cptr fields: [0]sp=19195 [1]pc=813 [2]parent=19393 [3]next=19393 [4]fn=870 [5]size=200 [6]self=19184
+  saved currco[19393]: sp=1244 pc=779
+CHANGECO exit: new_sp=19195 new_pc=813 a=5
+CHANGECO enter: arg=10 cptr=19393 currco_addr=500 currco=19184 sp=19197 pc=813
+  cptr fields: [0]sp=1244 [1]pc=779 [2]parent=0 [3]next=0 [4]fn=0 [5]size=0 [6]self=19393
+  saved currco[19184]: sp=19197 pc=813
+CHANGECO exit: new_sp=1244 new_pc=779 a=10
+CHANGECO enter: arg=7 cptr=18975 currco_addr=500 currco=19393 sp=1244 pc=779
+  cptr fields: [0]sp=18986 [1]pc=813 [2]parent=19393 [3]next=19393 [4]fn=870 [5]size=200 [6]self=18975
+  saved currco[19393]: sp=1244 pc=779
+CHANGECO exit: new_sp=18986 new_pc=813 a=7
+CHANGECO enter: arg=14 cptr=19393 currco_addr=500 currco=18975 sp=18988 pc=813
+  cptr fields: [0]sp=1244 [1]pc=779 [2]parent=0 [3]next=0 [4]fn=0 [5]size=0 [6]self=19393
+  saved currco[18975]: sp=18988 pc=813
+CHANGECO exit: new_sp=1244 new_pc=779 a=14
