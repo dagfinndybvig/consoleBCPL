@@ -5,6 +5,8 @@
 This directory contains a from-scratch implementation of BCPL coroutines
 for the C-based INTCODE interpreter.
 
+NOTE: ./compile.sh will now link automatically with CORLIB (intcode) to support coroutines
+
 ## Files
 
 | File | Purpose |
@@ -13,7 +15,7 @@ for the C-based INTCODE interpreter.
 | `icint.h` | Compiler portability header |
 | `LIBHDR` | BCPL standard library header |
 | `compile.sh` | Build + run script |
-| `CORO_LIB.b` | Coroutine runtime library |
+| `CORO_LIB.b` | Coroutine runtime library (compiled to CORLIB for linking) |
 | `test1_changeco.b` | Test: build pipeline + GETVEC |
 | `test2_createco.b` | Test: CREATECO + suspend |
 | `test3_callco.b` | Test: CALLCO/COWAIT round-trip |
