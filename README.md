@@ -18,7 +18,7 @@ This repository contains BCPL INTCODE interpreter implementations in multiple la
 | `bcpl-python-console` | Python | Pure Python - functional and portable. A bit slow though. |
 | `bcpl-rust-console` | Rust | High-performance implementation with zero dependencies. |
 
-I am also working on an extension of the original C version, in particular regarding coroutines.
+I am also working on an extension of the original C version, in particular regarding coroutines: see bcpl-c-console/new_coroutines
 
 Ported from the C version at https://sourceforge.net/projects/bcpl-c64/ <br>
 For a browser version look at https://github.com/dagfinndybvig/onlineBCPL <br>
