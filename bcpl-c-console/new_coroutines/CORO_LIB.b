@@ -13,11 +13,7 @@
 //   C!7 onwards = coroutine's private stack area
 
 GET "LIBHDR"
-
-GLOBAL $(
-   CURRCO:500;
-   COLIST:501
-$)
+GET "CORHDR"
 
 // DUMPCO — print coroutine control block fields (for debugging)
 LET DUMPCO(C) BE

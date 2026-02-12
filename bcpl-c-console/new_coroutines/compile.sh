@@ -43,16 +43,21 @@ fi
 # Concatenate syni and trni for the compiler front-end
 cat "$SCRIPT_DIR/syni" "$SCRIPT_DIR/trni" > "$SCRIPT_DIR/synitrni"
 
-# Step 1: Compile BCPL to OCODE
-echo "--- Compiling $1 to OCODE ---"
+# Step 1: Compile BCPL to OCODE (NOTE: COROUTINE SUPPORT)
+echo "--- Compiling $1 with COROUTINE SUPPORT ENABLED ---\n"
+echo "First to OCODE ..."
 "$SCRIPT_DIR/icint" "$SCRIPT_DIR/synitrni" -i"$1"
 
 # Step 2: Compile OCODE to INTCODE
 echo "--- Compiling OCODE to INTCODE ---"
 "$SCRIPT_DIR/icint" "$SCRIPT_DIR/cgi" -iOCODE
 
+# Step 2.5: Link with CORLIB for coroutine support
+echo "--- Linking with CORLIB ---"
+cat INTCODE CORLIB > RUNABLE
+
 # Step 3: Run INTCODE (pass remaining args)
-echo "--- Running INTCODE ---"
-"$SCRIPT_DIR/icint" INTCODE $2 $3
+echo "--- Running RUNABLE ---"
+"$SCRIPT_DIR/icint" RUNABLE $2 $3
 echo ""
 echo "--- Done ---"

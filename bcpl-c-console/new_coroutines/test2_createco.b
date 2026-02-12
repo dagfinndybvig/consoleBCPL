@@ -2,7 +2,8 @@
 // Verifies that creating a coroutine works — COROENTRY runs and
 // immediately COWAITs back to the creator.
 
-GET "CORO_LIB.b"
+GET "LIBHDR"
+GET "CORHDR"
 
 LET MYFUNC(ARG) = VALOF
 $( WRITES("MYFUNC should NOT run yet*N")
