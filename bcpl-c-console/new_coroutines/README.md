@@ -15,9 +15,11 @@ The result is an intfile called RUNABLE<b>
 | File | Purpose |
 |------|---------|
 | `icint.c` | Interpreter with CHANGECO debug tracing |
+| `icint_co.py` | Coroutine-enabled Python INTCODE interpreter |
 | `icint.h` | Compiler portability header |
 | `LIBHDR` | BCPL standard library header |
 | `compile.sh` | Build + run script |
+| `run_all_python_tests.sh` | Runs TEST2 and tests 3-6 using `icint_co.py` |
 | `CORO_LIB.b` | Coroutine runtime library (compiled to CORLIB for linking) |
 | `test1_changeco.b` | Test: build pipeline + GETVEC |
 | `test2_createco.b` | Test: CREATECO + suspend |
@@ -35,6 +37,27 @@ chmod +x compile.sh
 ./compile.sh test3_callco.b          # coroutine round-trip
 ./compile.sh test4_multi.b           # multiple yields
 ```
+
+## Python Coroutine Interpreter
+
+You can run precompiled coroutine intcode with the Python interpreter:
+
+```sh
+cd bcpl-c-console/new_coroutines
+/bin/python3 icint_co.py TEST2
+```
+
+To run the full coroutine parity check (TEST2 + tests 3-6):
+
+```sh
+cd bcpl-c-console/new_coroutines
+./run_all_python_tests.sh
+```
+
+Optional environment variables:
+
+- `PYTHON_BIN` (default: `/bin/python3`)
+- `TIMEOUT_SECS` (default: `20`)
 
 ## Debug Tracing
 
