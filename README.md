@@ -9,7 +9,6 @@ BCPL pioneered the idea of compiling to bytecode and then interpreting it on a v
 
 This repository contains BCPL INTCODE interpreter implementations in multiple languages. On that we can run an INTCODE version of the compiler which has already been provided to us. Thus we can bootstrap from a minimal basis. All we need to do is to reimplement the INTCODE interpreter, which now can be pretty much done by a coding agent. Accordingly the whole system should in principle be able to spread and multiply with very little human effort.
 
-HOWEVER I HAVE NOT BEEN ABLE TO IMPLEMENT COROUTINES YET!
 
 ## Available Implementations
 
@@ -19,7 +18,7 @@ HOWEVER I HAVE NOT BEEN ABLE TO IMPLEMENT COROUTINES YET!
 | `bcpl-python-console` | Python | Pure Python - functional and portable. A bit slow though. |
 | `bcpl-rust-console` | Rust | High-performance implementation with zero dependencies. |
 
-I am also working on an extension of the original C version.
+I am also working on an extension of the original C version, in particular regarding coroutines.
 
 Ported from the C version at https://sourceforge.net/projects/bcpl-c64/ <br>
 For a browser version look at https://github.com/dagfinndybvig/onlineBCPL <br>
