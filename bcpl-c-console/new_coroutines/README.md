@@ -5,7 +5,10 @@
 This directory contains a from-scratch implementation of BCPL coroutines
 for the C-based INTCODE interpreter.
 
-NOTE: ./compile.sh will now link automatically with CORLIB (intcode) to support coroutines
+NOTE:<br>
+./compile.sh will now link automatically with CORLIB (intcode) to support coroutines<br>
+The result is an intfile called RUNABLE<b>
+
 
 ## Files
 
