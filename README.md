@@ -15,7 +15,7 @@ This repository contains BCPL INTCODE interpreter implementations in multiple la
 | Directory | Language | Description |
 |-----------|----------|-------------|
 | `bcpl-js-console` | JavaScript/Node.js | Handy go-to if you have Node.js on your system. Pretty fast. |
-| `bcpl-python-console` | Python | Pure Python - functional and portable. A bit slow though. |
+| `bcpl-python-console` | Python | Pure Python, functional and portable. Includes coroutine-capable BCPL workflow (Linux + Windows) in `bcpl-python-console/Coroutines`. |
 | `bcpl-rust-console` | Rust | High-performance implementation with zero dependencies. |
 
 I am also working on an extension of the original C version, in particular regarding coroutines; see bcpl-c-console/new_coroutines. This appears to be working now, also the Python version based on this!
@@ -118,6 +118,32 @@ cd bcpl-python-console
 For better performance, use PyPy instead of CPython. See `bcpl-python-console/README.md` for details.
 
 FOR A SPECIFIC COMPILE.BAT FOR PYTHON/WINDOWS ALSO SEE THE PYTHON DIRECTORY
+
+## Python Coroutines (Linux + Windows)
+
+Coroutine-enabled BCPL is now available in a self-contained folder:
+
+- `bcpl-python-console/Coroutines`
+
+This includes coroutine headers/libraries, compiler passes, runtime tests, and scripts for both Linux and Windows.
+
+### Linux
+
+```bash
+cd bcpl-python-console/Coroutines
+./compile.sh test3_callco.b
+./run_all_python_tests.sh
+```
+
+### Windows
+
+```bat
+cd bcpl-python-console\Coroutines
+compile.bat test3_callco.b
+run_all_python_tests.bat
+```
+
+The coroutine pipeline in this folder compiles and runs with `icint_co.py`, links `CORLIB`, and executes via `RUNABLE`.
 
 ---
 
