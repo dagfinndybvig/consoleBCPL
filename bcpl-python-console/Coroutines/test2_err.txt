@@ -1,0 +1,8 @@
+CHANGECO enter: arg=0 cptr=19184 currco_addr=500 currco=19393 sp=1070 pc=693
+  cptr fields: [0]sp=19191 [1]pc=570 [2]parent=19393 [3]next=19393 [4]fn=870 [5]size=200 [6]self=19184
+  saved currco[19393]: sp=1070 pc=693
+CHANGECO exit: new_sp=19191 new_pc=570 a=0
+CHANGECO enter: arg=19184 cptr=19393 currco_addr=500 currco=19184 sp=19195 pc=813
+  cptr fields: [0]sp=1070 [1]pc=693 [2]parent=0 [3]next=0 [4]fn=0 [5]size=0 [6]self=19393
+  saved currco[19184]: sp=19195 pc=813
+CHANGECO exit: new_sp=1070 new_pc=693 a=19184
