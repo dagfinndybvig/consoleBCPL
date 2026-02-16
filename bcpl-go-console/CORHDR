@@ -1,0 +1,17 @@
+// CORO_LIB.b — Coroutine runtime library for consoleBCPL
+//
+// Provides: INITCO, CREATECO, DELETECO, CALLCO, COWAIT, RESUMECO, DUMPCO
+//
+
+GLOBAL $(
+    INITCO: 100;
+    CREATECO: 101;
+    DELETECO: 102;
+    CALLCO: 103;
+    COWAIT: 104;
+    RESUMECO: 105;
+    DUMPCO: 106;
+    CURRCO:107;
+    COLIST:108
+$)
+
