@@ -1,0 +1,6 @@
+LET START() BE
+$(
+   WRITES("HELLO, WORLD")
+   NEWLINE()
+   RESULTIS 0
+$)
