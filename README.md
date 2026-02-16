@@ -14,6 +14,7 @@ This repository contains BCPL INTCODE interpreter implementations in multiple la
 
 | Directory | Language | Description |
 |-----------|----------|-------------|
+| `bcpl-c-console` | C | Original baseline implementation and reference point; includes coroutine work in `bcpl-c-console/new_coroutines`. |
 | `bcpl-js-console` | JavaScript/Node.js | Handy go-to if you have Node.js on your system. Pretty fast. |
 | `bcpl-python-console` | Python | Pure Python, functional and portable. Includes coroutine-capable BCPL workflow (Linux + Windows) in `bcpl-python-console/Coroutines`. |
 | `bcpl-go-console` | Go | Go port of the coroutine-enabled INTCODE interpreter, compatible with existing coroutine artifacts (`TEST2`, `RUNABLE`). |
