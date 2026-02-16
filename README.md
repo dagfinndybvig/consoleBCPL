@@ -20,7 +20,6 @@ This repository contains BCPL INTCODE interpreter implementations in multiple la
 | `bcpl-go-console` | Go | Go port of the coroutine-enabled INTCODE interpreter, compatible with existing coroutine artifacts (`TEST2`, `RUNABLE`). |
 | `bcpl-rust-console` | Rust | High-performance implementation with zero dependencies. |
 
-I am also working on an extension of the original C version, in particular regarding coroutines; see bcpl-c-console/new_coroutines. This appears to be working now, also the Python version based on this!
 
 Ported from the C version at https://sourceforge.net/projects/bcpl-c64/ <br>
 For a browser version look at https://github.com/dagfinndybvig/onlineBCPL <br>
@@ -107,7 +106,7 @@ Use the `compile.sh` script to compile and run a BCPL program:
 
 # BCPL Python Console
 
-This is a Python port of the BCPL INTCODE interpreter. It is ready to go and works with any Python 3 installation.
+This is a Python port of the BCPL INTCODE interpreter. It is ready to go and works with Python 3.6+
 
 ## Usage
 
